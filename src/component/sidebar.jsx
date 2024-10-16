@@ -44,7 +44,7 @@ const Sidebar = () => {
       <div style={{ marginTop: '64px' }} />
       <List>
         {menuItems.map((item, index) => (
-          <ListItem button key={index} onClick={() => handleMenuItemClick(item.path)} sx={{ cursor: "pointer"}}>
+          <ListItem button key={index} onClick={() => handleMenuItemClick(item.path)} sx={{ cursor: "pointer", marginTop: 2}}>
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} sx={{ color: '#fff' }} />
           </ListItem>
