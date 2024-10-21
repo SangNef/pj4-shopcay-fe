@@ -7,15 +7,17 @@ import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Biểu tượng cho Products
-import PeopleIcon from '@mui/icons-material/People'; // Biểu tượng cho Users
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon sx={{ color: '#fff' }} />, path: '/' },
-  { text: 'Products', icon: <ShoppingCartIcon sx={{ color: '#fff' }} />, path: '/products' }, // Biểu tượng cho Products
-  { text: 'Users', icon: <PeopleIcon sx={{ color: '#fff' }} />, path: '/users' }, // Biểu tượng cho Users
-  { text: 'Settings', icon: <SettingsIcon sx={{ color: '#fff' }} />, path: '/settings' },
+  { text: 'Dashboard', icon: <DashboardIcon sx={{ color: '#fff' }} />, path: '/admin' },
+  { text: 'Products', icon: <ShoppingCartIcon sx={{ color: '#fff' }} />, path: '/admin/products' },
+  { text: 'Orders', icon: <ReceiptIcon sx={{ color: '#fff' }} />, path: '/admin/orders' },
+  { text: 'Users', icon: <PeopleIcon sx={{ color: '#fff' }} />, path: '/admin/users' },
+  { text: 'Settings', icon: <SettingsIcon sx={{ color: '#fff' }} />, path: '/admin/settings' },
   { text: 'Logout', icon: <ExitToAppIcon sx={{ color: '#fff' }} />, path: '/logout' },
 ];
 

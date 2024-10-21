@@ -1,20 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { getProduct } from '../../api/product';
 import defaultImage from '../../assets/9.png';
+import { createOrder } from '../../api/order';
+import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
-  const { id } = useParams();
   const [product, setProduct] = useState({});
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [payment, setPayment] = useState('PAY'); // Default payment method
+
+  const selectedProduct = JSON.parse(localStorage.getItem('selectedProduct'));
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  const navigate = useNavigate();
 
   const fetchProduct = async () => {
-    const data = await getProduct(id);
+    const data = await getProduct(selectedProduct.id);
     setProduct(data);
   };
 
   useEffect(() => {
     fetchProduct();
-  }, [id]);
+  }, []);
+
+  const handlePlaceOrder = async () => {
+    const orderData = {
+      product: { id: product.id },
+      qty: selectedProduct.quantity,
+      price: product.price * selectedProduct.quantity,
+      user: { id: user.id },
+      address: `${shippingAddress}, ${city}`,
+      phone: phoneNumber,
+      payment: payment, // Include the payment method
+    };
+    
+    const response = await createOrder(orderData);
+    if (response) {
+      navigate('/')
+    } else {
+      alert('Failed to place order. Please try again.');
+    }
+  };
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -33,7 +61,10 @@ const Checkout = () => {
           <div style={{ flex: '2', marginLeft: '20px' }}>
             <h2 style={{ color: '#333' }}>{product.name}</h2>
             <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#70C745' }}>${product.price}</p>
-            <p style={{ color: '#666' }}>{product.description}</p>
+            <p style={{ color: '#666' }}>QTY: {selectedProduct.quantity}</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#333' }}>
+              Total: ${product.price * selectedProduct.quantity}
+            </p>
           </div>
         </div>
       ) : (
@@ -56,7 +87,8 @@ const Checkout = () => {
                 borderRadius: '5px',
                 fontSize: '1rem',
               }}
-              required
+              value={user.fullname}
+              disabled
             />
           </div>
 
@@ -71,7 +103,8 @@ const Checkout = () => {
                 borderRadius: '5px',
                 fontSize: '1rem',
               }}
-              required
+              value={user.email}
+              disabled
             />
           </div>
 
@@ -86,6 +119,8 @@ const Checkout = () => {
                 borderRadius: '5px',
                 fontSize: '1rem',
               }}
+              value={shippingAddress}
+              onChange={(e) => setShippingAddress(e.target.value)}
               required
             />
           </div>
@@ -101,36 +136,8 @@ const Checkout = () => {
                 borderRadius: '5px',
                 fontSize: '1rem',
               }}
-              required
-            />
-          </div>
-
-          <div style={{ flex: '1', minWidth: '300px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#333' }}>State</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                fontSize: '1rem',
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ flex: '1', minWidth: '300px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#333' }}>Postal Code</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                fontSize: '1rem',
-              }}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
               required
             />
           </div>
@@ -146,12 +153,42 @@ const Checkout = () => {
                 borderRadius: '5px',
                 fontSize: '1rem',
               }}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               required
             />
           </div>
         </form>
 
-        {/* Payment Button */}
+        {/* Payment Options */}
+        <div style={{ marginTop: '30px' }}>
+          <h3 style={{ color: '#333' }}>Payment Method</h3>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label>
+              <input
+                type="radio"
+                name="payment"
+                value="PAY"
+                checked={payment === 'PAY'}
+                onChange={() => setPayment('PAY')}
+              /> PayPal
+            </label>
+          </div>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="payment"
+                value="CASH"
+                checked={payment === 'CASH'}
+                onChange={() => setPayment('CASH')}
+              /> Cash on Delivery
+            </label>
+          </div>
+        </div>
+
+        {/* Place Order Button */}
         <div style={{ marginTop: '30px', textAlign: 'center' }}>
           <button
             type="submit"
@@ -167,6 +204,7 @@ const Checkout = () => {
             }}
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#5da035')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#70C745')}
+            onClick={handlePlaceOrder}
           >
             Place Order
           </button>

@@ -12,19 +12,13 @@ import {
   Button,
   Pagination,
   IconButton,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Switch,
-  FormControlLabel,
   Box,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { getProducts, createProduct } from "../../api/product"; // Import the createProduct function
+import { getProducts } from "../../api/product"; // Import the getProducts function
+import Create from "./create"; // Import the Create component
 
 const Product = () => {
   const [filter, setFilter] = useState("");
@@ -32,17 +26,6 @@ const Product = () => {
   const rowsPerPage = 10;
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    price: "",
-    description: "",
-    category: "",
-    qty: "",
-    status: true,
-    canRent: false,
-    rentPrice: "",
-    images: [],
-  });
 
   const fetchProducts = async () => {
     const data = await getProducts();
@@ -63,39 +46,15 @@ const Product = () => {
 
   const handleDialogClose = () => {
     setOpen(false);
-    setNewProduct({
-      name: "",
-      price: "",
-      description: "",
-      category: "",
-      qty: "",
-      status: true,
-      canRent: false,
-      rentPrice: "",
-      images: [],
-    });
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewProduct((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleCreateProduct = async () => {
-    try {
-      await createProduct(newProduct); // Use createProduct to send data
-      handleDialogClose();
-      fetchProducts(); // Refresh product list
-    } catch (error) {
-      console.error("Failed to create product", error);
-    }
-  };
-
-  const filteredData = products.filter((product) => product.name.toLowerCase().includes(filter.toLowerCase()));
-  const paginatedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const filteredData = products.filter((product) =>
+    product.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  const paginatedData = filteredData.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   return (
     <Box sx={{ padding: "20px", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
@@ -127,7 +86,7 @@ const Product = () => {
         <Table>
           <TableHead>
             <TableRow>
-              {["ID", "Name", "Price", "Description", "Qty", "Status", "Can Rent", "Rental Price", "Actions"].map(
+              {["ID", "Name", "Image", "Price", "Description", "Qty", "Status", "Can Rent", "Rental Price", "Actions"].map(
                 (header) => (
                   <TableCell key={header} sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", color: "#333" }}>
                     {header}
@@ -141,6 +100,13 @@ const Product = () => {
               <TableRow key={product.id} sx={{ "&:hover": { backgroundColor: "#f1f3f5" } }}>
                 <TableCell>{product.id}</TableCell>
                 <TableCell>{product.name}</TableCell>
+                <TableCell>
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} style={{ width: '50px', height: 'auto', borderRadius: '4px' }} />
+                  ) : (
+                    "No Image"
+                  )}
+                </TableCell>
                 <TableCell>{product.price}</TableCell>
                 <TableCell>{product.description}</TableCell>
                 <TableCell>{product.qty}</TableCell>
@@ -175,92 +141,7 @@ const Product = () => {
       />
 
       {/* Create Product Dialog */}
-      <Dialog open={open} onClose={handleDialogClose}>
-        <DialogTitle>Create New Product</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Name"
-            type="text"
-            fullWidth
-            name="name"
-            value={newProduct.name}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            label="Price"
-            type="number"
-            fullWidth
-            name="price"
-            value={newProduct.price}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            name="description"
-            value={newProduct.description}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            label="Category"
-            type="text"
-            fullWidth
-            name="category"
-            value={newProduct.category}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            label="Quantity"
-            type="number"
-            fullWidth
-            name="qty"
-            value={newProduct.qty}
-            onChange={handleChange}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={newProduct.status}
-                onChange={handleChange}
-                name="status"
-              />
-            }
-            label="Active"
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={newProduct.canRent}
-                onChange={handleChange}
-                name="canRent"
-              />
-            }
-            label="Can Rent"
-          />
-          <TextField
-            margin="dense"
-            label="Rental Price"
-            type="number"
-            fullWidth
-            name="rentPrice"
-            value={newProduct.rentPrice}
-            onChange={handleChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button onClick={handleCreateProduct}>Create</Button>
-        </DialogActions>
-      </Dialog>
+      <Create open={open} onClose={handleDialogClose} onProductCreated={fetchProducts} />
     </Box>
   );
 };

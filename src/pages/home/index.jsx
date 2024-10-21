@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 import bg from "../../assets/bg.png";
 import defaultImg from "../../assets/9.png";
 import { getProducts } from "../../api/product";
@@ -23,7 +23,7 @@ const Home = () => {
   };
 
   return (
-    <div style={{ position: "relative", textAlign: "center", color: "#fff" }}>
+    <div style={{textAlign: "center", color: "#fff" }}>
       <img src={bg} alt="Background" style={{ width: "100%", height: "auto", opacity: 0.8 }} />
       <h2
         style={{
@@ -93,7 +93,7 @@ const Home = () => {
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "30px" }}>
           {products.length > 0 ? (
             products.map((product) => (
-              <div
+              <Link to={`/product/${product.id}`}
                 key={product.id}
                 style={{
                   border: "1px solid #ddd",
@@ -154,7 +154,7 @@ const Home = () => {
                     Add to Cart
                   </button>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <p style={{ color: "#333" }}>No products available</p>
