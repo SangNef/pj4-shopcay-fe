@@ -8,6 +8,7 @@ import ProductDetail from "../pages/home/product";
 import Product from "../pages/product";
 import Register from "../pages/home/register";
 import Order from "../pages/order";
+import Category from "../pages/home/category";
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
   {
     path: "/product/:id",
     Component: ProductDetail,
+    Layout: UserLayout,
+  },
+  {
+    path: "/products/:category",
+    Component: Category,
     Layout: UserLayout,
   },
   {

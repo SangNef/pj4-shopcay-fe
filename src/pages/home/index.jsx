@@ -90,7 +90,7 @@ const Home = () => {
       {/* Product List */}
       <div style={{ marginTop: "20px", padding: "20px" }}>
         <h3 style={{ color: "#333", textAlign: "center" }}>Product List</h3>
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px", maxWidth: 1124, margin: "auto" }}>
           {products.length > 0 ? (
             products.map((product) => (
               <Link to={`/product/${product.id}`}
@@ -103,6 +103,7 @@ const Home = () => {
                   textAlign: "center",
                   backgroundColor: "#fff",
                   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  textDecoration: "none",
                 }}
               >
                 <img

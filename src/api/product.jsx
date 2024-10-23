@@ -11,3 +11,27 @@ export const createProduct = async (productData) => {
 export const getProduct = async (id) => {
   return await get(`/products/${id}`);
 };
+
+export const randomProducts = async () => {
+  return await get("/products/random");
+};
+
+export const getFruitTrees = async () => {
+  return await get("/products/category/fruit-tree");
+}
+
+export const getFlowers = async () => {
+  return await get("/products/category/flowering-tree");
+}
+
+export const getShadeTrees = async () => {
+  return await get("/products/category/shade-tree");
+}
+
+export const getOrnamentalTrees = async () => {
+  return await get("/products/category/ornamental-tree");
+}
+
+export const getEvergreenTrees = async () => {
+  return await get("/products/category/evergreen-tree");
+}

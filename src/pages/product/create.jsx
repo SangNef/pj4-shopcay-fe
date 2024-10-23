@@ -9,6 +9,10 @@ import {
   Switch,
   FormControlLabel,
   Box,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import { createProduct } from "../../api/product"; // Adjust the import path as needed
 import axios from "axios";
@@ -18,14 +22,14 @@ const Create = ({ open, onClose, onProductCreated }) => {
     name: "",
     price: "",
     description: "",
-    category: "",
+    category: "", // Change to string, will hold selected category
     qty: "",
     status: true,
     canRent: false,
     rentPrice: "",
     image: "", // Store the uploaded image URL here
   });
-  
+
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -113,16 +117,25 @@ const Create = ({ open, onClose, onProductCreated }) => {
           onChange={handleChange}
           size="small" // Set input size to small
         />
-        <TextField
-          margin="dense"
-          label="Category"
-          type="text"
-          fullWidth
-          name="category"
-          value={newProduct.category}
-          onChange={handleChange}
-          size="small" // Set input size to small
-        />
+        
+        {/* Dropdown for Category Selection */}
+        <FormControl fullWidth margin="dense">
+          <InputLabel>Category</InputLabel>
+          <Select
+            name="category"
+            value={newProduct.category}
+            onChange={handleChange}
+            size="small" // Set input size to small
+            MenuProps={{ PaperProps: { sx: { maxHeight: 200 } } }} // Optional: control height of dropdown
+          >
+            <MenuItem value="Fruit Tree">Fruit Tree</MenuItem>
+            <MenuItem value="Flowering Tree">Flowering Tree</MenuItem>
+            <MenuItem value="Shade Tree">Shade Tree</MenuItem>
+            <MenuItem value="Ornamental Tree">Ornamental Tree</MenuItem>
+            <MenuItem value="Evergreen Tree">Evergreen Tree</MenuItem>
+          </Select>
+        </FormControl>
+
         <TextField
           margin="dense"
           label="Quantity"
@@ -149,6 +162,7 @@ const Create = ({ open, onClose, onProductCreated }) => {
             size="small" // Set input size to small
           />
         )}
+        
         {/* Image Upload Field */}
         <input
           accept="image/*"
