@@ -151,7 +151,7 @@ const Order = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {order.status < 4 && (
+                    {order.status === 3 && (
                       <button
                         onClick={() => handleUpdateStatus(order.id)}
                         style={{
@@ -164,7 +164,7 @@ const Order = () => {
                           cursor: "pointer",
                         }}
                       >
-                        Update Status
+                        Completed
                       </button>
                     )}
                     {order.status === 0 && (
@@ -172,7 +172,6 @@ const Order = () => {
                         onClick={() => handleCancelOrder(order.id)}
                         style={{
                             marginTop: '12px',
-                            marginLeft: '8px',
                             padding: '8px 16px',
                             backgroundColor: '#dc3545',
                             color: '#fff',
