@@ -15,17 +15,19 @@ import {
   Box,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { getProducts } from "../../api/product"; // Import the getProducts function
-import Create from "./create"; // Import the Create component
+import { getProducts, toggleStatus } from "../../api/product";
+import Create from "./create";
+import Edit from "./edit";
 
 const Product = () => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const [products, setProducts] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const fetchProducts = async () => {
     const data = await getProducts();
@@ -41,30 +43,48 @@ const Product = () => {
   };
 
   const handleDialogOpen = () => {
-    setOpen(true);
+    setOpenCreateModal(true);
   };
 
   const handleDialogClose = () => {
-    setOpen(false);
+    setOpenCreateModal(false);
   };
 
-  const filteredData = products.filter((product) =>
-    product.name.toLowerCase().includes(filter.toLowerCase())
-  );
-  const paginatedData = filteredData.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
+  const handleToggleStatus = async (product) => {
+    const response = await toggleStatus(product.id);
+    if (response) {
+      fetchProducts();
+    }
+  };
+
+  const filteredData = products.filter((product) => product.name.toLowerCase().includes(filter.toLowerCase()));
+  const paginatedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  const handleEditClick = (product) => {
+    setSelectedProduct(product);
+    setOpenEditModal(true);
+  };
+
+  const handleEditClose = () => {
+    setOpenEditModal(false);
+    setSelectedProduct(null);
+  };
 
   return (
     <Box sx={{ padding: "20px", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
       <Breadcrumbs aria-label="breadcrumb">
-        <Typography color="text.primary" sx={{ fontWeight: "bold", fontSize: "16px" }}>Home</Typography>
-        <Typography color="text.primary" sx={{ fontWeight: "bold", fontSize: "16px" }}>Products</Typography>
+        <Typography color="text.primary" sx={{ fontWeight: "bold", fontSize: "16px" }}>
+          Home
+        </Typography>
+        <Typography color="text.primary" sx={{ fontWeight: "bold", fontSize: "16px" }}>
+          Products
+        </Typography>
       </Breadcrumbs>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "20px 0" }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333" }}>Products List</Typography>
+        <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333" }}>
+          Products List
+        </Typography>
 
         <Button
           variant="contained"
@@ -86,13 +106,22 @@ const Product = () => {
         <Table>
           <TableHead>
             <TableRow>
-              {["ID", "Name", "Image", "Price", "Description", "Qty", "Status", "Can Rent", "Rental Price", "Actions"].map(
-                (header) => (
-                  <TableCell key={header} sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", color: "#333" }}>
-                    {header}
-                  </TableCell>
-                )
-              )}
+              {[
+                "ID",
+                "Name",
+                "Image",
+                "Price",
+                "Description",
+                "Qty",
+                "Status",
+                "Can Rent",
+                "Rental Price",
+                "Actions",
+              ].map((header) => (
+                <TableCell key={header} sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", color: "#333" }}>
+                  {header}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -101,8 +130,12 @@ const Product = () => {
                 <TableCell>{product.id}</TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} style={{ width: '50px', height: 'auto', borderRadius: '4px' }} />
+                  {product.images ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      style={{ width: "50px", height: "auto", borderRadius: "4px" }}
+                    />
                   ) : (
                     "No Image"
                   )}
@@ -115,15 +148,16 @@ const Product = () => {
                 <TableCell>{product.rentPrice || "N/A"}</TableCell>
                 <TableCell>
                   <Box sx={{ display: "flex", gap: "10px" }}>
-                    <IconButton onClick={() => console.log("View")} color="primary">
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton onClick={() => console.log("Edit")} color="warning">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => console.log("Delete")} color="error">
-                      <DeleteIcon />
-                    </IconButton>
+                    <Button onClick={() => handleEditClick(product)} color="warning">
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color={product.status ? "error" : "success"}
+                      onClick={() => handleToggleStatus(product)}
+                    >
+                      {product.status ? "Lock" : "Unlock"}
+                    </Button>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -141,7 +175,15 @@ const Product = () => {
       />
 
       {/* Create Product Dialog */}
-      <Create open={open} onClose={handleDialogClose} onProductCreated={fetchProducts} />
+      <Create open={openCreateModal} onClose={handleDialogClose} onProductCreated={fetchProducts} />
+      {selectedProduct && (
+        <Edit
+          open={openEditModal}
+          onClose={handleEditClose}
+          product={selectedProduct}
+          onProductUpdated={fetchProducts}
+        />
+      )}
     </Box>
   );
 };

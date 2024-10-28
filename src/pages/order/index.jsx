@@ -10,10 +10,12 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
-  const [expandedRows, setExpandedRows] = useState({});
+
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     const data = await getOrders();
@@ -24,12 +26,6 @@ const Order = () => {
     fetchOrders();
   }, []);
 
-  const handleToggleRow = (id) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   // Function to map status codes to their label and color
   const getStatusDetails = (status) => {
@@ -43,12 +39,16 @@ const Order = () => {
       case 3:
         return { label: "Delivered", color: "#28a745" }; // Green
       case 4:
-        return { label: "Returned", color: "#fd7e14" }; // Orange
+        return { label: "Completed", color: "#fd7e14" }; // Orange
       case 5:
         return { label: "Cancelled", color: "#dc3545" }; // Red
       default:
         return { label: "Unknown", color: "#6c757d" }; // Gray
     }
+  };
+
+  const navigateToOrderDetail = (orderId) => {
+    navigate(`/admin/order/${orderId}`);
   };
 
   return (
@@ -75,7 +75,7 @@ const Order = () => {
             {orders.map((order) => (
               <React.Fragment key={order.id}>
                 <TableRow
-                  onClick={() => handleToggleRow(order.id)}
+                  onClick={() => navigateToOrderDetail(order.id)}
                   style={{ cursor: "pointer", transition: "background-color 0.3s" }}
                   hover
                 >
@@ -100,35 +100,6 @@ const Order = () => {
                     </span>
                   </TableCell>
                 </TableRow>
-                {expandedRows[order.id] && (
-                  <TableRow>
-                    <TableCell colSpan={8} style={{ padding: '20px', backgroundColor: '#f9f9f9' }}>
-                      <strong>Address Details:</strong>
-                      <div style={{ marginTop: '10px' }}>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell><strong>Address:</strong></TableCell>
-                              <TableCell>{order.address}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell><strong>Ward:</strong></TableCell>
-                              <TableCell>{order.ward.name}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell><strong>District:</strong></TableCell>
-                              <TableCell>{order.ward.district.name}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell><strong>Province:</strong></TableCell>
-                              <TableCell>{order.ward.district.province.name}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
               </React.Fragment>
             ))}
           </TableBody>

@@ -9,6 +9,9 @@ import Product from "../pages/product";
 import Register from "../pages/home/register";
 import Order from "../pages/order";
 import Category from "../pages/home/category";
+import OrderDetail from "../pages/order/detail";
+import OrderUser from "../pages/home/order";
+import Rent from "../pages/home/rent";
 
 const routes = [
   {
@@ -40,6 +43,16 @@ const routes = [
     Layout: UserLayout,
   },
   {
+    path: "/orders",
+    Component: OrderUser,
+    Layout: UserLayout,
+  },
+  {
+    path: "rent",
+    Component: Rent,
+    Layout: UserLayout,
+  },
+  {
     path: "/admin/",
     Component: Dashboard,
     Layout: AdminLayout,
@@ -53,7 +66,12 @@ const routes = [
     path: "/admin/orders",
     Component: Order,
     Layout: AdminLayout,
-  }
+  },
+  {
+    path: "/admin/order/:id",
+    Component: OrderDetail,
+    Layout: AdminLayout,
+  },
 ];
 
 export default routes;

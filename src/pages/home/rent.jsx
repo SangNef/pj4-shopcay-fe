@@ -1,41 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { getProduct } from "../../api/product";
-import defaultImage from "../../assets/9.png";
+import defaultImage from "../../assets/9.png"; // Ensure you have a default image
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
 import { useNavigate } from "react-router-dom";
-import {
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  TextField,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Button,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { MenuItem, Select, InputLabel, FormControl, TextField, Button, Snackbar, Alert, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
-const Checkout = () => {
+const Rent = () => {
   const [product, setProduct] = useState({});
   const [shippingAddress, setShippingAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [payment, setPayment] = useState("PAY");
+  const [rentDays, setRentDays] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState(""); // New state for payment method
   const [provinces, setProvinces] = useState([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState(null);
   const [districts, setDistricts] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState(null);
   const [wards, setWards] = useState([]);
   const [selectedWardId, setSelectedWardId] = useState(null);
-  const [showSuccessToast, setShowSuccessToast] = useState(false); // State for Snackbar
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  const selectedProduct = JSON.parse(localStorage.getItem("selectedProduct"));
+  const productRent = JSON.parse(localStorage.getItem("productRent"));
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetchProduct();
+    fetchProvinces();
+  }, []);
+
   const fetchProduct = async () => {
-    const data = await getProduct(selectedProduct.id);
+    const data = await getProduct(productRent.id);
     setProduct(data);
   };
 
@@ -58,31 +52,31 @@ const Checkout = () => {
     setWards(response);
   };
 
-  useEffect(() => {
-    fetchProduct();
-    fetchProvinces();
-  }, []);
+  const handleRent = async () => {
+    if (!paymentMethod) {
+      alert("Please select a payment method.");
+      return;
+    }
 
-  const handlePlaceOrder = async () => {
     const orderData = {
       product: { id: product.id },
-      qty: selectedProduct.quantity,
-      price: product.price * selectedProduct.quantity,
+      qty: productRent.quantity,
+      price: product.rentPrice * rentDays,
       user: { id: user.id },
       address: `${shippingAddress}`,
       phone: phoneNumber,
-      payment: payment,
       ward: { id: selectedWardId },
-      type: "BUY",
+      type: "RENT",
+      rentDay: rentDays,
+      paymentMethod: paymentMethod, // Include selected payment method
     };
 
     const response = await createOrder(orderData);
     if (response) {
-      // Show the success Snackbar and delay navigation
       setShowSuccessToast(true);
       setTimeout(() => {
         navigate("/orders");
-      }, 1000); // 3-second delay before navigating
+      }, 1000);
     } else {
       alert("Failed to place order. Please try again.");
     }
@@ -100,9 +94,9 @@ const Checkout = () => {
       }}
     >
       <div style={{ flex: "2", background: "#fff" }}>
-        <h1 style={{ textAlign: "center", color: "#333" }}>Checkout</h1>
+        <h1 style={{ textAlign: "center", color: "#333" }}>Rent Product</h1>
         <div style={{ borderTop: "1px solid #ddd", paddingTop: "20px" }}>
-          <h3 style={{ marginBottom: "20px", color: "#333" }}>Billing and Shipping Information</h3>
+          <h3 style={{ marginBottom: "20px", color: "#333" }}>Shipping Information</h3>
           <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <TextField
               label="Full Name"
@@ -211,23 +205,35 @@ const Checkout = () => {
               required
               inputProps={{ style: { height: "35px", fontSize: "14px" } }}
             />
+            <TextField
+              label="Number of Rental Days"
+              variant="outlined"
+              type="number"
+              size="small"
+              fullWidth
+              value={rentDays}
+              onChange={(e) => setRentDays(e.target.value)}
+              inputProps={{ min: 1, style: { height: "35px", fontSize: "14px" } }}
+            />
+
+            {/* Payment Method Selection */}
+            <div style={{ marginTop: "30px" }}>
+              <h3 style={{ color: "#333" }}>Payment Method</h3>
+              <RadioGroup 
+                value={paymentMethod} 
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <FormControlLabel value="PAYPAL" control={<Radio />} label="PayPal" checked />
+                <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
+              </RadioGroup>
+            </div>
           </form>
+        </div>
 
-          {/* Payment Options */}
-          <div style={{ marginTop: "30px" }}>
-            <h3 style={{ color: "#333" }}>Payment Method</h3>
-            <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
-              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
-              <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
-            </RadioGroup>
-          </div>
-
-          {/* Place Order Button */}
-          <div style={{ marginTop: "30px", textAlign: "center" }}>
-            <Button variant="contained" color="success" onClick={handlePlaceOrder}>
-              Place Order
-            </Button>
-          </div>
+        <div style={{ marginTop: "30px", textAlign: "center" }}>
+          <Button variant="contained" color="success" onClick={handleRent}>
+            Confirm Rent
+          </Button>
         </div>
       </div>
 
@@ -242,20 +248,21 @@ const Checkout = () => {
             />
             <div style={{ marginLeft: "20px" }}>
               <h2 style={{ color: "#333" }}>{product.name}</h2>
-              <p style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#70C745" }}>${product.price}</p>
-              <p style={{ color: "#666" }}>QTY: {selectedProduct.quantity}</p>
-              <p style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#333" }}>
-                Total: ${product.price * selectedProduct.quantity}
-              </p>
+              <p style={{ fontWeight: "bold" }}>Price: {product.rentPrice} USD</p>
+              <p style={{ fontWeight: "bold" }}>Available Quantity: {product.availableQuantity}</p>
+              <p style={{ fontWeight: "bold" }}>Description: {product.description}</p>
             </div>
           </div>
         ) : (
-          <p style={{ color: "#666" }}>Loading product details...</p>
+          <p>Loading product details...</p>
         )}
       </div>
 
-      {/* Snackbar for success toast */}
-      <Snackbar open={showSuccessToast} autoHideDuration={3000} onClose={() => setShowSuccessToast(false)}>
+      <Snackbar
+        open={showSuccessToast}
+        autoHideDuration={3000}
+        onClose={() => setShowSuccessToast(false)}
+      >
         <Alert onClose={() => setShowSuccessToast(false)} severity="success" sx={{ width: "100%" }}>
           Order placed successfully!
         </Alert>
@@ -264,4 +271,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default Rent;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 import bg from "../../assets/bg.png";
+import service from "../../assets/service.png";
 import defaultImg from "../../assets/9.png";
 import { getProducts } from "../../api/product";
 
@@ -23,7 +24,7 @@ const Home = () => {
   };
 
   return (
-    <div style={{textAlign: "center", color: "#fff" }}>
+    <div style={{ textAlign: "center", color: "#fff" }}>
       <img src={bg} alt="Background" style={{ width: "100%", height: "auto", opacity: 0.8 }} />
       <h2
         style={{
@@ -86,80 +87,71 @@ const Home = () => {
           CONTACT US
         </button>
       </div>
-
-      {/* Product List */}
-      <div style={{ marginTop: "20px", padding: "20px" }}>
-        <h3 style={{ color: "#333", textAlign: "center" }}>Product List</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px", maxWidth: 1124, margin: "auto" }}>
-          {products.length > 0 ? (
-            products.map((product) => (
-              <Link to={`/product/${product.id}`}
-                key={product.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "20px",
-                  width: "250px",
-                  textAlign: "center",
-                  backgroundColor: "#fff",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                  textDecoration: "none",
-                }}
-              >
-                <img
-                  src={product.image || defaultImg}
-                  alt={product.name}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", marginBottom: "15px" }}
-                />
-                <h4 style={{ color: "#333" }}>{product.name}</h4>
-                <p style={{ fontWeight: "bold", color: "#70C745", marginTop: "6px" }}>${product.price}</p>
-
-                {/* Buttons for "Buy Now" and "Add to Cart" */}
-                <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
-                  <button
-                    style={{
-                      padding: "8px 15px",
-                      backgroundColor: "#70C745",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s",
-                    }}
-                    onClick={() => handleBuyNow(product.id)} // Navigate to checkout with product ID
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5da035")}
-                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#70C745")}
-                  >
-                    Buy Now
-                  </button>
-
-                  <button
-                    style={{
-                      padding: "8px 15px",
-                      backgroundColor: "#fff",
-                      color: "#70C745",
-                      border: "2px solid #70C745",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s, color 0.3s",
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#70C745";
-                      e.currentTarget.style.color = "#fff";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#fff";
-                      e.currentTarget.style.color = "#70C745";
-                    }}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <p style={{ color: "#333" }}>No products available</p>
-          )}
+      <div style={{ marginTop: "50px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2rem", color: "#70C745", marginBottom: "20px" }}>OUR SERVICES</h2>
+        <p style={{ fontSize: "1.2rem", marginBottom: "30px", color: "#000" }}>
+          We provide the perfect service for you.
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            gap: "40px",
+            flexWrap: "wrap",
+            padding: "20px",
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
+          <div style={{ width: "45%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center"}}>
+            <div
+              style={{
+                color: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <h3 style={{ fontSize: "1.5rem", margin: "8px 0", color: "black" }}>Plants Care</h3>
+              <p style={{ color: "#4f4f4f" }}>
+                In Aenean purus, pretium sito amet sapien denim moste consectet sedoni urna placerat sodales. Service
+                its.
+              </p>
+            </div>
+            <div
+              style={{
+                color: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <h3 style={{ fontSize: "1.5rem", margin: "8px 0", color: "black" }}>Pressure Washing</h3>
+              <p style={{ color: "#4f4f4f" }}>
+                In Aenean purus, pretium sito amet sapien denim moste consectet sedoni urna placerat sodales. Service
+                its.
+              </p>
+            </div>
+            <div
+              style={{
+                color: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <h3 style={{ fontSize: "1.5rem", margin: "8px 0", color: "black" }}>Tree Service & Trimming</h3>
+              <p style={{ color: "#4f4f4f" }}>
+                In Aenean purus, pretium sito amet sapien denim moste consectet sedoni urna placerat sodales. Service
+                its.
+              </p>
+            </div>
+          </div>
+          <div style={{ width: "45%"}}>
+            <img src={service} alt="Service" style={{ width: "auto", height: "540px", borderRadius: "8px" }} />
+          </div>
         </div>
       </div>
     </div>

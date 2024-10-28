@@ -1,4 +1,4 @@
-import { get, post } from "./index";
+import { get, post, put } from "./index";
 
 export const getProducts = async () => {
   return await get("/products/all");
@@ -10,6 +10,14 @@ export const createProduct = async (productData) => {
 
 export const getProduct = async (id) => {
   return await get(`/products/${id}`);
+};
+
+export const updateProduct = async (id, productData) => {
+  return await put(`/products/update/${id}`, productData);
+};
+
+export const toggleStatus = async (id) => {
+  return await put(`/products/status/${id}`);
 };
 
 export const randomProducts = async () => {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Menu, MenuItem, IconButton, Button } from "@mui/material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -203,9 +203,9 @@ const Header = () => {
                   </a>
                 </MenuItem>
                 <MenuItem onClick={handleClose}>
-                  <a href="/orders" style={{ textDecoration: "none", color: "#000" }}>
+                  <Link to="/orders" style={{ textDecoration: "none", color: "#000" }}>
                     My Orders
-                  </a>
+                  </Link>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
                   <a style={{ textDecoration: "none", color: "#000" }}>
