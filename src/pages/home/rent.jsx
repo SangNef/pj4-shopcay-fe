@@ -57,31 +57,43 @@ const Rent = () => {
       alert("Please select a payment method.");
       return;
     }
-
+  
+    // Prepare the order details as per the required payload format
     const orderData = {
-      product: { id: product.id },
-      qty: productRent.quantity,
-      price: product.rentPrice * rentDays,
-      user: { id: user.id },
-      address: `${shippingAddress}`,
-      phone: phoneNumber,
-      ward: { id: selectedWardId },
-      type: "RENT",
-      rentDay: rentDays,
-      paymentMethod: paymentMethod, // Include selected payment method
+      user: { id: user.id }, // User ID from localStorage
+      product: { id: product.id }, // Product ID from the state
+      ward: { id: selectedWardId }, // Selected Ward ID from the state
+      type: "RENT", // Type of order
+      rentDay: rentDays, // Number of rental days from the state
+      price: product.rentPrice * rentDays, // Price based on rent days
+      payment: paymentMethod, // Payment method selected
+      phone: phoneNumber, // Phone number from the state
+      address: shippingAddress, // Shipping address from the state
+      orderDetails: [
+        {
+          product: { id: product.id }, // Product ID
+          price: product.rentPrice, // Product rent price
+          qty: productRent.quantity, // Quantity from localStorage
+        },
+      ],
     };
-
-    const response = await createOrder(orderData);
-    if (response) {
-      setShowSuccessToast(true);
-      setTimeout(() => {
-        navigate("/orders");
-      }, 1000);
-    } else {
-      alert("Failed to place order. Please try again.");
+  
+    try {
+      const response = await createOrder(orderData);
+      if (response) {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          navigate("/orders");
+        }, 1000);
+      } else {
+        alert("Failed to place order. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("An error occurred. Please try again.");
     }
   };
-
+  
   return (
     <div
       style={{
@@ -248,9 +260,9 @@ const Rent = () => {
             />
             <div style={{ marginLeft: "20px" }}>
               <h2 style={{ color: "#333" }}>{product.name}</h2>
-              <p style={{ fontWeight: "bold" }}>Price: {product.rentPrice} USD</p>
-              <p style={{ fontWeight: "bold" }}>Available Quantity: {product.availableQuantity}</p>
-              <p style={{ fontWeight: "bold" }}>Description: {product.description}</p>
+              <p style={{ fontWeight: "bold" }}>Price: ${product.rentPrice}</p>
+              <p style={{ fontWeight: "bold" }}>Quantity: {productRent.quantity}</p>
+              <p style={{ fontWeight: "bold" }}>Total: ${product.rentPrice * productRent.quantity}</p>
             </div>
           </div>
         ) : (

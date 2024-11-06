@@ -4,6 +4,10 @@ export const getProducts = async () => {
   return await get("/products/all");
 };
 
+export const getActiveProducts = async () => {
+  return await get("/products/active");
+};
+
 export const createProduct = async (productData) => {
   return await post("/products/create", productData);
 };

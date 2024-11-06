@@ -43,6 +43,19 @@ const Category = () => {
     console.log(`Buy now for product ID: ${productId}`);
   };
 
+  const handleAddToCart = (productId) => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const productIndex = cart.findIndex((item) => item.productId === productId);
+    if (productIndex > -1) {
+      cart[productIndex].quantity += 1;
+    } else {
+      cart.push({ productId, quantity: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    console.log(`Product ${productId} added to cart with quantity 1`);
+  };
+
   return (
     <div style={{ position: "relative", maxWidth: "100%", overflow: "hidden" }}>
       <img src={ov} alt="" style={{ height: "300px", width: "100%", objectFit: "cover" }} />
@@ -138,18 +151,16 @@ const Category = () => {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "20px" }}>
             {products.length > 0 ? (
               products.map((product) => (
-                <Link
-                  to={`/product/${product.id}`}
+                <div
                   key={product.id}
                   style={{
-                    position: "relative", // Enable positioning for the rental flag
+                    position: "relative",
                     border: "1px solid #ddd",
                     borderRadius: "8px",
                     padding: "20px",
                     textAlign: "center",
                     backgroundColor: "#fff",
                     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    textDecoration: "none",
                   }}
                 >
                   {product.canRent && (
@@ -158,7 +169,7 @@ const Category = () => {
                         position: "absolute",
                         top: "10px",
                         left: "10px",
-                        backgroundColor: "#FFA500", // Flag color
+                        backgroundColor: "#FFA500",
                         color: "#fff",
                         padding: "5px 10px",
                         borderRadius: "5px",
@@ -169,15 +180,18 @@ const Category = () => {
                       Rental
                     </span>
                   )}
-                  
-                  <img
-                    src={product.images[0] || defaultImg}
-                    alt={product.name}
-                    style={{ width: "200px", height: "200px", objectFit: "cover", marginBottom: "15px" }}
-                  />
-                  <h4 style={{ color: "#333" }}>{product.name}</h4>
-                  <p style={{ fontWeight: "bold", color: "#70C745", marginTop: "6px" }}>${product.price}</p>
-              
+
+                  {/* Wrap only product details in Link */}
+                  <Link to={`/product/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <img
+                      src={product.images[0] || defaultImg}
+                      alt={product.name}
+                      style={{ width: "200px", height: "200px", objectFit: "cover", marginBottom: "15px" }}
+                    />
+                    <h4 style={{ color: "#333" }}>{product.name}</h4>
+                    <p style={{ fontWeight: "bold", color: "#70C745", marginTop: "6px" }}>${product.price}</p>
+                  </Link>
+
                   {/* Buttons for "Buy Now" and "Add to Cart" */}
                   <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
                     <button
@@ -190,13 +204,13 @@ const Category = () => {
                         cursor: "pointer",
                         transition: "background-color 0.3s",
                       }}
-                      onClick={() => handleBuyNow(product.id)} // Navigate to checkout with product ID
+                      onClick={() => handleBuyNow(product.id)}
                       onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5da035")}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#70C745")}
                     >
                       Buy Now
                     </button>
-              
+
                     <button
                       style={{
                         padding: "8px 15px",
@@ -215,11 +229,12 @@ const Category = () => {
                         e.currentTarget.style.backgroundColor = "#fff";
                         e.currentTarget.style.color = "#70C745";
                       }}
+                      onClick={() => handleAddToCart(product.id)}
                     >
                       Add to Cart
                     </button>
                   </div>
-                </Link>
+                </div>
               ))
             ) : (
               <p style={{ color: "#333" }}>No products available</p>

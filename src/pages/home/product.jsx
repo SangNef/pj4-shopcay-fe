@@ -34,6 +34,18 @@ const ProductDetail = () => {
     navigate("/checkout");
   };
 
+  const handleAddToCart = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const productIndex = cart.findIndex((item) => item.productId === Number(id)); // Convert id to a number
+    if (productIndex > -1) {
+      cart[productIndex].quantity += quantity;
+    } else {
+      cart.push({ productId: Number(id), quantity }); // Ensure the id is a number
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.location.reload();
+  };
+
   // Handlers for incrementing and decrementing quantity
   const handleIncrement = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -47,7 +59,7 @@ const ProductDetail = () => {
 
   // Function to handle renting the product
   const handleRent = () => {
-    localStorage.setItem("productRent", JSON.stringify({ id, quantity})); // Store the product ID in localStorage
+    localStorage.setItem("productRent", JSON.stringify({ id, quantity })); // Store the product ID in localStorage
     navigate("/rent"); // Navigate to the rent page
   };
 
@@ -74,19 +86,17 @@ const ProductDetail = () => {
         <div className="product-info">
           <h2>{product.name}</h2>
           <p className="price">Price: ${product.price}</p>
-          {product.canRent && (
-            <p>Rent price: ${product.rentPrice}</p>
-          )}
+          {product.canRent && <p>Rent price: ${product.rentPrice}</p>}
           <p className="category">Category: {product.category}</p>
 
           <div className="quantity">
             <strong>Quantity:</strong>
             <div className="quantity-input">
-              <IconButton onClick={handleDecrement} disabled={quantity <= 1}>
+              <IconButton onClick={handleDecrement} disabled={quantity <= 1} className="icon-button">
                 <RemoveIcon />
               </IconButton>
               <input type="number" value={quantity} readOnly className="quantity-input-field" />
-              <IconButton onClick={handleIncrement}>
+              <IconButton onClick={handleIncrement} className="icon-button">
                 <AddIcon />
               </IconButton>
             </div>
@@ -97,7 +107,7 @@ const ProductDetail = () => {
               <Button variant="contained" color="success" onClick={handleBuyNow} sx={{ marginRight: 1 }}>
                 Buy Now
               </Button>
-              <Button variant="outlined" color="success">
+              <Button variant="outlined" color="success" onClick={handleAddToCart}>
                 Add to Cart
               </Button>
               {product.canRent && (

@@ -9,7 +9,6 @@ import {
   Collapse,
   Paper,
   IconButton,
-  Button,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -94,26 +93,24 @@ const Order = () => {
     <Paper
       style={{
         marginTop: "24px",
-        maxWidth: "1200px",
+        maxWidth: "1280px",
         marginLeft: "auto",
         marginRight: "auto",
-        borderRadius: "8px",
-        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+        padding: "16px",
       }}
     >
+      <h2 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>Order List</h2>
+
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
               <TableCell>
-                <strong>Product Name</strong>
+                <strong>ID</strong>
               </TableCell>
               <TableCell>
-                <strong>Price</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Quantity</strong>
+                <strong>Type</strong>
               </TableCell>
               <TableCell>
                 <strong>Total Price</strong>
@@ -123,8 +120,7 @@ const Order = () => {
               </TableCell>
               <TableCell>
                 <strong>Action</strong>
-              </TableCell>{" "}
-              {/* Thêm cột Action */}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -141,12 +137,16 @@ const Order = () => {
                       />
                     </IconButton>
                   </TableCell>
-                  <TableCell>{order.product.name}</TableCell>
-                  <TableCell>{order.product.price.toLocaleString()} VND</TableCell>
-                  <TableCell>{order.qty}</TableCell>
-                  <TableCell>{(order.product.price * order.qty).toLocaleString()} VND</TableCell>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>{order.type}</TableCell>
                   <TableCell>
-                    <span style={{ color: statusColors[order.status], fontWeight: "bold" }}>
+                    ${order.price}
+                  </TableCell>
+                  <TableCell>
+                    <span style={{
+                      color: statusColors[order.status], 
+                      fontWeight: "bold"
+                    }}>
                       {statusText[order.status]}
                     </span>
                   </TableCell>
@@ -162,23 +162,25 @@ const Order = () => {
                           border: "none",
                           borderRadius: "4px",
                           cursor: "pointer",
+                          transition: "background-color 0.3s ease",
                         }}
                       >
-                        Completed
+                        Mark as Completed
                       </button>
                     )}
                     {order.status === 0 && (
                       <button
                         onClick={() => handleCancelOrder(order.id)}
                         style={{
-                            marginTop: '12px',
-                            padding: '8px 16px',
-                            backgroundColor: '#dc3545',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
+                          marginTop: '12px',
+                          padding: '8px 16px',
+                          backgroundColor: '#dc3545',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.3s ease',
+                        }}
                       >
                         Cancel Order
                       </button>
@@ -188,7 +190,7 @@ const Order = () => {
                 <TableRow>
                   <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
                     <Collapse in={open[order.id]} timeout="auto" unmountOnExit>
-                      <Table size="small" aria-label="address details">
+                      <Table size="small" aria-label="order details">
                         <TableHead>
                           <TableRow>
                             <TableCell>
@@ -205,11 +207,22 @@ const Order = () => {
                         <TableBody>
                           <TableRow>
                             <TableCell>
-                              {order.address}, {order.ward.name}, {order.ward.district.name},{" "}
-                              {order.ward.district.province.name}
+                              {order.address}, {order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}
                             </TableCell>
                             <TableCell>{order.phone}</TableCell>
                             <TableCell>{order.payment}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell colSpan={3}>
+                              <strong>Order Details:</strong>
+                              <ul>
+                                {order.orderDetails.map(detail => (
+                                  <li key={detail.id}>
+                                    <strong>{detail.product.name}</strong>: {detail.qty} x {detail.product.price.toLocaleString()} VND
+                                  </li>
+                                ))}
+                              </ul>
+                            </TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>

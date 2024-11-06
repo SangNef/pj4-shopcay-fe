@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 
 const Checkout = () => {
-  const [product, setProduct] = useState({});
+  const [products, setProducts] = useState([]); // Change to an array for multiple products
   const [shippingAddress, setShippingAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [payment, setPayment] = useState("PAY");
@@ -31,12 +31,21 @@ const Checkout = () => {
   const [showSuccessToast, setShowSuccessToast] = useState(false); // State for Snackbar
 
   const selectedProduct = JSON.parse(localStorage.getItem("selectedProduct"));
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
+  // Function to fetch product details
   const fetchProduct = async () => {
-    const data = await getProduct(selectedProduct.id);
-    setProduct(data);
+    if (selectedProduct) {
+      const data = await getProduct(selectedProduct.id);
+      setProducts([data]); // Wrap in an array for consistency
+    } else if (cart.length > 0) {
+      // Fetch details for each product in the cart
+      const productPromises = cart.map(item => getProduct(item.productId));
+      const productsData = await Promise.all(productPromises);
+      setProducts(productsData);
+    }
   };
 
   const fetchProvinces = async () => {
@@ -64,30 +73,77 @@ const Checkout = () => {
   }, []);
 
   const handlePlaceOrder = async () => {
+    // Determine the total quantity and price for the order
+    const totalQuantity = selectedProduct
+      ? selectedProduct.quantity
+      : cart.reduce((total, item) => total + item.quantity, 0); // Fallback to cart quantities if no selectedProduct
+  
+    const totalPrice = selectedProduct
+      ? products[0].price * selectedProduct.quantity
+      : cart.reduce(
+          (total, item, index) => total + products[index].price * item.quantity,
+          0
+        ); // Calculate total price based on cart or selected product
+  
+    // Prepare order details for each item in the cart (or selected product)
+    const orderDetails = selectedProduct
+      ? [
+          {
+            product: { id: selectedProduct.id },
+            price: products[0].price,
+            qty: selectedProduct.quantity,
+          },
+        ]
+      : cart.map((item, index) => ({
+          product: { id: item.productId },
+          price: products[index].price,
+          qty: item.quantity,
+        }));
+  
+    // Prepare order data
     const orderData = {
-      product: { id: product.id },
-      qty: selectedProduct.quantity,
-      price: product.price * selectedProduct.quantity,
       user: { id: user.id },
-      address: `${shippingAddress}`,
-      phone: phoneNumber,
-      payment: payment,
+      product: selectedProduct
+        ? { id: selectedProduct.id }
+        : cart.map((item) => ({ id: item.productId })), // For multiple products, include each product's ID
       ward: { id: selectedWardId },
-      type: "BUY",
+      type: "BUY", // or "RENT" depending on your use case
+      rentDay: selectedProduct ? selectedProduct.rentDay : 0, // If rent, pass rent days
+      price: totalPrice,
+      payment: payment,
+      phone: phoneNumber,
+      address: shippingAddress,
+      orderDetails: orderDetails,
     };
-
-    const response = await createOrder(orderData);
-    if (response) {
-      // Show the success Snackbar and delay navigation
-      setShowSuccessToast(true);
-      setTimeout(() => {
-        navigate("/orders");
-      }, 1000); // 3-second delay before navigating
-    } else {
-      alert("Failed to place order. Please try again.");
+  
+    // Call API to place the order
+    try {
+      const response = await createOrder(orderData);
+      if (response) {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          navigate("/orders");
+        }, 1000); // Redirect after 1 second delay
+      } else {
+        alert("Failed to place order. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("An error occurred while placing the order. Please try again.");
     }
   };
-
+  
+  const calculateTotalPrice = () => {
+    if (selectedProduct) {
+      return products[0] ? products[0].price * selectedProduct.quantity : 0;
+    } else {
+      return cart.reduce((total, item, index) => {
+        const product = products[index];
+        return product ? total + (product.price * item.quantity) : total;
+      }, 0);
+    }
+  };
+  
   return (
     <div
       style={{
@@ -102,7 +158,9 @@ const Checkout = () => {
       <div style={{ flex: "2", background: "#fff" }}>
         <h1 style={{ textAlign: "center", color: "#333" }}>Checkout</h1>
         <div style={{ borderTop: "1px solid #ddd", paddingTop: "20px" }}>
-          <h3 style={{ marginBottom: "20px", color: "#333" }}>Billing and Shipping Information</h3>
+          <h3 style={{ marginBottom: "20px", color: "#333" }}>
+            Billing and Shipping Information
+          </h3>
           <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <TextField
               label="Full Name"
@@ -213,7 +271,6 @@ const Checkout = () => {
             />
           </form>
 
-          {/* Payment Options */}
           <div style={{ marginTop: "30px" }}>
             <h3 style={{ color: "#333" }}>Payment Method</h3>
             <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
@@ -222,7 +279,6 @@ const Checkout = () => {
             </RadioGroup>
           </div>
 
-          {/* Place Order Button */}
           <div style={{ marginTop: "30px", textAlign: "center" }}>
             <Button variant="contained" color="success" onClick={handlePlaceOrder}>
               Place Order
@@ -231,31 +287,41 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* Product Info */}
-      <div style={{ flex: "1", marginLeft: "20px", background: "#fff" }}>
-        {product ? (
-          <div style={{ display: "flex", border: "1px solid #ccc", boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)" }}>
-            <img
-              src={product?.images?.[0] || defaultImage}
-              alt={product.name}
-              style={{ width: "100%", maxWidth: "200px", borderRadius: "8px" }}
-            />
-            <div style={{ marginLeft: "20px" }}>
-              <h2 style={{ color: "#333" }}>{product.name}</h2>
-              <p style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#70C745" }}>${product.price}</p>
-              <p style={{ color: "#666" }}>QTY: {selectedProduct.quantity}</p>
-              <p style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#333" }}>
-                Total: ${product.price * selectedProduct.quantity}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <p style={{ color: "#666" }}>Loading product details...</p>
-        )}
+      <div style={{ flex: "1", background: "#f9f9f9", padding: "20px" }}>
+        <h3 style={{ marginBottom: "20px" }}>Order Summary</h3>
+        <div>
+          {products.length > 0 ? (
+            products.map((product, index) => (
+              <div key={product.id} style={{ display: "flex", marginBottom: "15px" }}>
+                <img
+                  src={product.images.length > 0 ? product.images[0] : defaultImage}
+                  alt={product.name}
+                  style={{ width: "100px", height: "100px", objectFit: "cover", marginRight: "10px" }}
+                />
+                <div>
+                  <h4>{product.name}</h4>
+                  <p>Price: ${product.price}</p>
+                  <p>Quantity: {selectedProduct ? selectedProduct.quantity : cart[index].quantity}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No products in cart</p>
+          )}
+        </div>
+
+        {/* Display Total Price */}
+        <h4 style={{ textAlign: "right", marginTop: "20px" }}>
+          Total: ${calculateTotalPrice()}
+        </h4>
       </div>
 
-      {/* Snackbar for success toast */}
-      <Snackbar open={showSuccessToast} autoHideDuration={3000} onClose={() => setShowSuccessToast(false)}>
+      {/* Success Snackbar */}
+      <Snackbar
+        open={showSuccessToast}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccessToast(false)}
+      >
         <Alert onClose={() => setShowSuccessToast(false)} severity="success" sx={{ width: "100%" }}>
           Order placed successfully!
         </Alert>

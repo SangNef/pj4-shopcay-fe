@@ -66,12 +66,14 @@
 }
 
 .product-container .add-to-cart {
-    background-color: #4CAF50; /* Green */
+    background-color: #4CAF50;
+    /* Green */
     color: white;
 }
 
 .product-container .buy-now {
-    background-color: #008CBA; /* Blue */
+    background-color: #008CBA;
+    /* Blue */
     color: white;
 }
 
@@ -86,7 +88,60 @@
 }
 
 .product-container .additional-info ul {
-    list-style-type: disc; /* Đặt kiểu danh sách thành hình tròn */
-    margin-left: 20px; /* Thêm lề trái để căn chỉnh */
+    list-style-type: disc;
+    /* Đặt kiểu danh sách thành hình tròn */
+    margin-left: 20px;
+    /* Thêm lề trái để căn chỉnh */
     margin-bottom: 30px;
+}
+
+.quantity {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.quantity-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+.quantity-input-field {
+    width: 40px;
+    text-align: center;
+    border: none;
+    outline: none;
+    font-size: 16px;
+}
+
+.icon-button {
+    padding: 5px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.icon-button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    font-size: 16px;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:disabled {
+    background-color: #ddd;
 }

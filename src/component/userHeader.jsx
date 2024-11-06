@@ -1,15 +1,22 @@
-import React, { useState } from "react";
-import { Menu, MenuItem, IconButton, Button } from "@mui/material";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import React, { useEffect, useState } from "react";
+import { Menu, MenuItem, IconButton, Button, Badge } from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [anchorEl, setAnchorEl] = useState(null);
-  const [productMenuOpen, setProductMenuOpen] = useState(false);  // State to manage submenu visibility
-  const [timeoutId, setTimeoutId] = useState(null);  // State to store timeout ID
+  const [productMenuOpen, setProductMenuOpen] = useState(false); // State to manage submenu visibility
+  const [timeoutId, setTimeoutId] = useState(null); // State to store timeout ID
+  const [cartCount, setCartCount] = useState(0);
   const open = Boolean(anchorEl);
   const navigation = useNavigate();
+
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCartCount(cart.length);
+  }, []);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -27,7 +34,7 @@ const Header = () => {
   // Show the submenu immediately on mouse enter
   const handleMouseEnter = () => {
     if (timeoutId) {
-      clearTimeout(timeoutId);  // Clear any previous timeout to avoid premature hiding
+      clearTimeout(timeoutId); // Clear any previous timeout to avoid premature hiding
     }
     setProductMenuOpen(true);
   };
@@ -37,7 +44,7 @@ const Header = () => {
     const id = setTimeout(() => {
       setProductMenuOpen(false);
     }, 200);
-    setTimeoutId(id);  // Store the timeout ID
+    setTimeoutId(id); // Store the timeout ID
   };
 
   return (
@@ -47,7 +54,15 @@ const Header = () => {
         padding: "10px 20px",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1120px", margin: "auto" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          maxWidth: "1120px",
+          margin: "auto",
+        }}
+      >
         <div>
           <h1 style={{ margin: 0, color: "#fff" }}>Logo</h1>
         </div>
@@ -69,10 +84,10 @@ const Header = () => {
             </li>
 
             {/* Products with Submenu */}
-            <li 
-              style={{ margin: "0 10px", position: "relative" }} 
-              onMouseEnter={handleMouseEnter}  // Show submenu on mouse enter
-              onMouseLeave={handleMouseLeave}  // Hide submenu after 1s on mouse leave
+            <li
+              style={{ margin: "0 10px", position: "relative" }}
+              onMouseEnter={handleMouseEnter} // Show submenu on mouse enter
+              onMouseLeave={handleMouseLeave} // Hide submenu after 1s on mouse leave
             >
               <a
                 href="#"
@@ -104,42 +119,27 @@ const Header = () => {
                   }}
                 >
                   <li style={{ padding: "8px 12px" }}>
-                    <a
-                      href="/products/fruit-trees"
-                      style={{ textDecoration: "none", color: "#333" }}
-                    >
+                    <a href="/products/fruit-trees" style={{ textDecoration: "none", color: "#333" }}>
                       Fruit Tree
                     </a>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a
-                      href="/products/flowering-trees"
-                      style={{ textDecoration: "none", color: "#333" }}
-                    >
+                    <a href="/products/flowering-trees" style={{ textDecoration: "none", color: "#333" }}>
                       Flowering Tree
                     </a>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a
-                      href="/products/shade-trees"
-                      style={{ textDecoration: "none", color: "#333" }}
-                    >
+                    <a href="/products/shade-trees" style={{ textDecoration: "none", color: "#333" }}>
                       Shade Tree
                     </a>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a
-                      href="/products/ornamental-trees"
-                      style={{ textDecoration: "none", color: "#333" }}
-                    >
+                    <a href="/products/ornamental-trees" style={{ textDecoration: "none", color: "#333" }}>
                       Ornamental Tree
                     </a>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a
-                      href="/products/evergreen-trees"
-                      style={{ textDecoration: "none", color: "#333" }}
-                    >
+                    <a href="/products/evergreen-trees" style={{ textDecoration: "none", color: "#333" }}>
                       Evergreen Tree
                     </a>
                   </li>
@@ -180,12 +180,12 @@ const Header = () => {
         <div>
           {user ? (
             <div>
-              <IconButton
-                size="large"
-                edge="end"
-                color="inherit"
-                onClick={handleClick}
-              >
+              <IconButton component={Link} to="/cart" color="inherit">
+                <Badge badgeContent={cartCount} color="error">
+                  <ShoppingCartIcon style={{ color: "#fff" }} />
+                </Badge>
+              </IconButton>
+              <IconButton size="large" edge="end" color="inherit" onClick={handleClick}>
                 <AccountCircleIcon style={{ color: "#fff" }} />
                 <span style={{ marginLeft: "8px", color: "#fff", fontSize: 14 }}>{user.username}</span>
               </IconButton>
@@ -208,20 +208,13 @@ const Header = () => {
                   </Link>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
-                  <a style={{ textDecoration: "none", color: "#000" }}>
-                    Logout
-                  </a>
+                  <a style={{ textDecoration: "none", color: "#000" }}>Logout</a>
                 </MenuItem>
               </Menu>
             </div>
           ) : (
             <div style={{ display: "flex" }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                href="/login"
-                style={{ marginRight: "10px" }}
-              >
+              <Button variant="contained" color="secondary" href="/login" style={{ marginRight: "10px" }}>
                 Login
               </Button>
               <Button variant="contained" color="secondary" href="/register">

@@ -12,6 +12,7 @@ import Category from "../pages/home/category";
 import OrderDetail from "../pages/order/detail";
 import OrderUser from "../pages/home/order";
 import Rent from "../pages/home/rent";
+import Cart from "../pages/home/cart";
 
 const routes = [
   {
@@ -35,6 +36,11 @@ const routes = [
   {
     path: "/products/:category",
     Component: Category,
+    Layout: UserLayout,
+  },
+  {
+    path: "/cart",
+    Component: Cart,
     Layout: UserLayout,
   },
   {

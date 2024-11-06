@@ -74,29 +74,38 @@ const OrderDetail = () => {
       <div style={{ display: 'flex', gap: '16px' }}>
         <div style={{ flex: 1 }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Product Information</h2>
-          <p><strong>Name:</strong> {order.product.name}</p>
-          <p><strong>Price:</strong> {order.product.price.toLocaleString()} VND</p>
-          <p><strong>Quantity:</strong> {order.qty}</p>
-          <p><strong>Total Price:</strong> {order.price.toLocaleString()} VND</p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            {order.product.images.map((image, index) => (
-              <img key={index} src={image} alt="Product" style={{ width: '96px', height: '96px', borderRadius: '4px' }} />
-            ))}
-          </div>
+          {order.orderDetails?.map((orderDetail, index) => (
+            <div key={index}>
+              <p><strong>Name:</strong> {orderDetail.product?.name}</p>
+              <p><strong>Price:</strong> ${orderDetail.product?.price}</p>
+              <p><strong>Quantity:</strong> {orderDetail.qty}</p>
+              <p><strong>Total Price:</strong> ${orderDetail.price}</p>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                {orderDetail.product?.images?.map((image, index) => (
+                  <img key={index} src={image} alt="Product" style={{ width: '96px', height: '96px', borderRadius: '4px' }} />
+                ))}
+              </div>
+              <hr />
+            </div>
+          ))}
         </div>
 
         <div style={{ flex: 1 }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Shipping Information</h2>
-          <p><strong>Name:</strong> {order.user.fullname}</p>
-          <p><strong>Email:</strong> {order.user.email}</p>
+          <p><strong>Name:</strong> {order.user?.fullname}</p>
+          <p><strong>Email:</strong> {order.user?.email}</p>
           <p><strong>Phone:</strong> {order.phone}</p>
           <h3 style={{ fontSize: '18px', fontWeight: '500', marginTop: '8px' }}>Shipping Address</h3>
           <p>{order.address}</p>
-          <p>{order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}</p>
+          <p>{order.ward?.name}, {order.ward?.district?.name}, {order.ward?.district?.province?.name}</p>
           <h3 style={{ fontSize: '18px', fontWeight: '500', marginTop: '8px' }}>Order Details</h3>
+          {order.type == "RENT" && (
+            <p><strong>Rent Date:</strong> {order.rentDay} Day(s)</p>
+          )}
+          <p><strong>Price:</strong>${order.price}</p>
           <p><strong>Payment Method:</strong> {order.payment}</p>
           <p>
-            <strong>Status:</strong> 
+            <strong>Status:</strong>
             <span style={{ color: statusColors[order.status], fontWeight: 'bold', marginLeft: '8px' }}>
               {statusText[order.status]}
             </span>

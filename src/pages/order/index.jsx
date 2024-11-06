@@ -63,8 +63,7 @@ const Order = () => {
             <TableRow>
               <TableCell><strong>Order ID</strong></TableCell>
               <TableCell align="left"><strong>User</strong></TableCell>
-              <TableCell align="left"><strong>Product Name</strong></TableCell>
-              <TableCell align="left"><strong>Quantity</strong></TableCell>
+              <TableCell align="left"><strong>Type</strong></TableCell>
               <TableCell align="left"><strong>Price</strong></TableCell>
               <TableCell align="left"><strong>Payment Method</strong></TableCell>
               <TableCell align="left"><strong>Phone</strong></TableCell>
@@ -81,8 +80,7 @@ const Order = () => {
                 >
                   <TableCell>{order.id}</TableCell>
                   <TableCell align="left">{order.user.fullname}</TableCell>
-                  <TableCell align="left">{order.product.name}</TableCell>
-                  <TableCell align="left">{order.qty}</TableCell>
+                  <TableCell align="left">{order.type}</TableCell>
                   <TableCell align="left">${order.price}</TableCell>
                   <TableCell align="left">{order.payment}</TableCell>
                   <TableCell align="left">{order.phone}</TableCell>
