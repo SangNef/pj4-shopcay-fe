@@ -13,6 +13,9 @@ import OrderDetail from "../pages/order/detail";
 import OrderUser from "../pages/home/order";
 import Rent from "../pages/home/rent";
 import Cart from "../pages/home/cart";
+import CheckoutProduct from "../pages/home/checkoutProduct";
+import UserOrder from "../pages/home/orderDetail";
+import Profile from "../pages/home/profile";
 
 const routes = [
   {
@@ -49,13 +52,28 @@ const routes = [
     Layout: UserLayout,
   },
   {
+    path: "/checkout/:id",
+    Component: CheckoutProduct,
+    Layout: UserLayout,
+  },
+  {
     path: "/orders",
     Component: OrderUser,
     Layout: UserLayout,
   },
   {
-    path: "rent",
+    path: "/order/:id",
+    Component: UserOrder,
+    Layout: UserLayout,
+  },
+  {
+    path: "/rent/:id",
     Component: Rent,
+    Layout: UserLayout,
+  },
+  {
+    path: "/profile",
+    Component: Profile,
     Layout: UserLayout,
   },
   {

@@ -6,43 +6,42 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Collapse,
   Paper,
   IconButton,
   Snackbar,
   Alert,
+  Pagination
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useNavigate } from "react-router-dom";  // Import useNavigate
 import { getOrdersByUser, updateStatus, cancelOrder } from "../../api/order";
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
-  const [open, setOpen] = useState({}); // To manage which rows are open
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [page, setPage] = useState(1); // Default page is 1
+  const [totalPages, setTotalPages] = useState(1); // Total number of pages
   const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();  // Initialize useNavigate
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1) => {
     try {
-      const response = await getOrdersByUser(user.id);
-      setOrders(response);
+      const response = await getOrdersByUser(user.id, page - 1, 10); // Backend expects page 0-indexed
+      setOrders(response.orders);
+      setTotalPages(response.totalPages); // Assuming the backend returns totalPages
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const handleExpandClick = (id) => {
-    setOpen((prevOpen) => ({ ...prevOpen, [id]: !prevOpen[id] }));
-  };
+    fetchOrders(page);
+  }, [page]);
 
   const handleUpdateStatus = async (id) => {
     try {
       await updateStatus(id);
-      fetchOrders();
+      fetchOrders(page);
       handleshowSnackbar("Status updated successfully");
     } catch (error) {
       console.error(error);
@@ -53,7 +52,7 @@ const Order = () => {
   const handleCancelOrder = async (id) => {
     try {
       await cancelOrder(id);
-      fetchOrders();
+      fetchOrders(page);
       handleshowSnackbar("Order canceled successfully");
     } catch (error) {
       console.error(error);
@@ -70,7 +69,7 @@ const Order = () => {
     setShowSnackbar(false);
   };
 
-  // Định nghĩa mô tả và màu sắc cho các trạng thái
+  // Status and color definitions
   const statusText = {
     0: "Pending",
     1: "Confirmed",
@@ -87,155 +86,97 @@ const Order = () => {
     3: '#28a745',
     4: '#fd7e14',
     5: '#dc3545'
-  }
+  };
+
+  // Type and color definitions
+  const orderTypeColors = {
+    'BUY': '#007bff',   // Blue for BUY
+    'RENT': '#fd7e14',  // Orange for RENT
+  };
 
   return (
-    <Paper
-      style={{
-        marginTop: "24px",
-        maxWidth: "1280px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        padding: "16px",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>Order List</h2>
+    <Paper className="max-w-6xl mx-auto mt-6 p-4">
+      <h2 className="text-center text-xl font-semibold mb-6 text-gray-800">Order List</h2>
 
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell></TableCell>
-              <TableCell>
-                <strong>ID</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Type</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Total Price</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Status</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Action</strong>
-              </TableCell>
+              <TableCell><strong>ID</strong></TableCell>
+              <TableCell><strong>Type</strong></TableCell>
+              <TableCell><strong>Total Price</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Action</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {orders.map((order) => (
-              <React.Fragment key={order.id}>
-                <TableRow>
-                  <TableCell>
-                    <IconButton onClick={() => handleExpandClick(order.id)}>
-                      <ExpandMoreIcon
-                        style={{
-                          transform: open[order.id] ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.3s ease",
-                        }}
-                      />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.type}</TableCell>
-                  <TableCell>
-                    ${order.price}
-                  </TableCell>
-                  <TableCell>
-                    <span style={{
-                      color: statusColors[order.status], 
-                      fontWeight: "bold"
-                    }}>
-                      {statusText[order.status]}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {order.status === 3 && (
-                      <button
-                        onClick={() => handleUpdateStatus(order.id)}
-                        style={{
-                          marginTop: "12px",
-                          padding: "8px 16px",
-                          backgroundColor: "#007bff",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          transition: "background-color 0.3s ease",
-                        }}
-                      >
-                        Mark as Completed
-                      </button>
-                    )}
-                    {order.status === 0 && (
-                      <button
-                        onClick={() => handleCancelOrder(order.id)}
-                        style={{
-                          marginTop: '12px',
-                          padding: '8px 16px',
-                          backgroundColor: '#dc3545',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.3s ease',
-                        }}
-                      >
-                        Cancel Order
-                      </button>
-                    )}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
-                    <Collapse in={open[order.id]} timeout="auto" unmountOnExit>
-                      <Table size="small" aria-label="order details">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              <strong>Shipping Address</strong>
-                            </TableCell>
-                            <TableCell>
-                              <strong>Phone</strong>
-                            </TableCell>
-                            <TableCell>
-                              <strong>Payment Method</strong>
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>
-                              {order.address}, {order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}
-                            </TableCell>
-                            <TableCell>{order.phone}</TableCell>
-                            <TableCell>{order.payment}</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell colSpan={3}>
-                              <strong>Order Details:</strong>
-                              <ul>
-                                {order.orderDetails.map(detail => (
-                                  <li key={detail.id}>
-                                    <strong>{detail.product.name}</strong>: {detail.qty} x {detail.product.price.toLocaleString()} VND
-                                  </li>
-                                ))}
-                              </ul>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </Collapse>
-                  </TableCell>
-                </TableRow>
-              </React.Fragment>
+              <TableRow
+                key={order.id}
+                hover
+                onClick={() => navigate(`/order/${order.id}`)}  // Navigate on row click
+                style={{ cursor: "pointer" }}  // Optional: Makes the row clickable
+              >
+                <TableCell>{order.id}</TableCell>
+                <TableCell>
+                  <span
+                    style={{
+                      color: orderTypeColors[order.type] || '#000',
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {order.type}
+                  </span>
+                </TableCell>
+                <TableCell>${order.price}</TableCell>
+                <TableCell>
+                  <span
+                    style={{
+                      color: statusColors[order.status],
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {statusText[order.status]}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  {order.status === 3 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();  // Prevent navigating when clicking the button
+                        handleUpdateStatus(order.id);
+                      }}
+                      className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                    >
+                      Mark as Completed
+                    </button>
+                  )}
+                  {order.status === 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();  // Prevent navigating when clicking the button
+                        handleCancelOrder(order.id);
+                      }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </TableCell>
+              </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Snackbar để hiển thị thông báo */}
+      <Pagination
+        count={totalPages}
+        page={page}
+        onChange={(_, value) => setPage(value)}
+        className="mt-6 flex justify-center"
+      />
+
+      {/* Snackbar */}
       <Snackbar open={showSnackbar} autoHideDuration={3000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
           {snackbarMessage}

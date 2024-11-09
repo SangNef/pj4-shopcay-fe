@@ -4,8 +4,9 @@ export const createOrder = async (data) => {
   return post("/orders", data);
 };
 
-export const getOrders = async () => {
-  return get("/orders");
+export const getOrders = async (page, size) => {
+  const response = await get(`/orders?page=${page}&size=${size}`);
+  return response; // assuming the API returns data with 'data' key
 };
 
 export const getProvinces = async () => {
@@ -32,6 +33,14 @@ export const cancelOrder = async (orderId) => {
   return put(`/orders/cancel/${orderId}`);
 };
 
-export const getOrdersByUser = async (userId) => {
-  return get(`/orders/user/${userId}`);
+export const getOrdersByUser = async (userId, page = 1, pageSize = 10) => {
+  return get(`/orders/user/${userId}?page=${page}&pageSize=${pageSize}`);
 };
+
+export const sendReview = async (id, data) => {
+  return post(`/reviews/${id}`, data);
+}
+
+export const extendOrder = async (id, data) => {
+  return put(`/orders/extend/${id}`, data);
+}

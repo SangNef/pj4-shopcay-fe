@@ -85,6 +85,13 @@ const OrderDetail = () => {
                   <img key={index} src={image} alt="Product" style={{ width: '96px', height: '96px', borderRadius: '4px' }} />
                 ))}
               </div>
+              {orderDetail.reviews?.length > 0 && (
+                orderDetail.reviews.map((review, index) => (
+                  <div key={index} style={{ marginBottom: '8px' }}>
+                    <p><strong>Review:</strong> {review.comment}</p>
+                  </div>
+                ))
+              )}
               <hr />
             </div>
           ))}
@@ -100,9 +107,10 @@ const OrderDetail = () => {
           <p>{order.ward?.name}, {order.ward?.district?.name}, {order.ward?.district?.province?.name}</p>
           <h3 style={{ fontSize: '18px', fontWeight: '500', marginTop: '8px' }}>Order Details</h3>
           {order.type == "RENT" && (
-            <p><strong>Rent Date:</strong> {order.rentDay} Day(s)</p>
+            <p><strong>Rent Start:</strong> {order.rentStart} - <strong>Rent End:</strong> {order.rentEnd}</p>
           )}
           <p><strong>Price:</strong>${order.price}</p>
+          {order.type == "RENT" && <p><strong>Debt:</strong> ${order.debt}</p>}
           <p><strong>Payment Method:</strong> {order.payment}</p>
           <p>
             <strong>Status:</strong>

@@ -31,7 +31,7 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     localStorage.setItem("selectedProduct", JSON.stringify({ id, quantity }));
-    navigate("/checkout");
+    navigate(`/checkout/${id}/?qty=${quantity}`);
   };
 
   const handleAddToCart = () => {
@@ -59,8 +59,8 @@ const ProductDetail = () => {
 
   // Function to handle renting the product
   const handleRent = () => {
-    localStorage.setItem("productRent", JSON.stringify({ id, quantity })); // Store the product ID in localStorage
-    navigate("/rent"); // Navigate to the rent page
+    // localStorage.setItem("productRent", JSON.stringify({ id, quantity })); // Store the product ID in localStorage
+    navigate(`/rent/${id}/?qty=${quantity}`); // Navigate to the rent page
   };
 
   return (

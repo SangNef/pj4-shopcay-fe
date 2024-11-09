@@ -9,41 +9,50 @@ import {
   TableRow,
   Paper,
   Typography,
+  Pagination,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Track the total number of pages
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  const fetchOrders = async () => {
-    const data = await getOrders();
-    setOrders(data);
+  const fetchOrders = async (page) => {
+    try {
+      const data = await getOrders(page, 10); // 10 orders per page
+      setOrders(data.content); // content contains the orders
+      setTotalPages(data.totalPages); // totalPages will help in pagination
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(page - 1); // page is 1-based, so subtract 1 for the backend
+  }, [page]);
 
-
-  // Function to map status codes to their label and color
   const getStatusDetails = (status) => {
     switch (status) {
       case 0:
-        return { label: "Pending", color: "#ffc107" }; // Yellow
+        return { label: "Pending", color: "#ffc107" };
       case 1:
-        return { label: "Confirmed", color: "#17a2b8" }; // Blue
+        return { label: "Confirmed", color: "#17a2b8" };
       case 2:
-        return { label: "Shipping", color: "#007bff" }; // Light Blue
+        return { label: "Shipping", color: "#007bff" };
       case 3:
-        return { label: "Delivered", color: "#28a745" }; // Green
+        return { label: "Delivered", color: "#28a745" };
       case 4:
-        return { label: "Completed", color: "#fd7e14" }; // Orange
+        return { label: "Completed", color: "#fd7e14" };
       case 5:
-        return { label: "Cancelled", color: "#dc3545" }; // Red
+        return { label: "Cancelled", color: "#dc3545" };
       default:
-        return { label: "Unknown", color: "#6c757d" }; // Gray
+        return { label: "Unknown", color: "#6c757d" };
     }
   };
 
@@ -103,6 +112,16 @@ const Order = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)} // Update page state on page change
+          color="primary"
+        />
+      </div>
     </div>
   );
 };

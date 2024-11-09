@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { getProduct } from "../../api/product";
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
-import { Button, FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Button, FormControlLabel, Radio, RadioGroup, Snackbar } from "@mui/material";
 
-const Checkout = () => {
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const ids = cart.map((item) => item.productId);
-  const quantities = cart.map((item) => item.quantity);
-  const user = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();
-
-  const [products, setProducts] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
-
+const CheckoutProduct = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const [product, setProduct] = useState({});
+  const [quantity, setQuantity] = useState(1);
   const [provinces, setProvinces] = useState([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState(null);
   const [districts, setDistricts] = useState([]);
@@ -26,24 +21,25 @@ const Checkout = () => {
   const [payment, setPayment] = useState("PAY");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  const fetchProducts = async () => {
-    try {
-      const productPromises = ids.map(async (id) => {
-        const data = await getProduct(id);
-        return data;
-      });
-      const results = await Promise.all(productPromises);
-      setProducts(results);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
 
-      // Calculate the total price based on fetched products and quantities
-      const total = results.reduce((acc, product, index) => {
-        return acc + product.price * quantities[index];
-      }, 0);
-      setTotalPrice(total);
+  const fetchProduct = async () => {
+    try {
+      const data = await getProduct(id);
+      setProduct(data);
     } catch (error) {
       console.error("Failed to fetch product data:", error);
     }
   };
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const qty = queryParams.get("qty");
+    if (qty) {
+      setQuantity(Number(qty));
+    }
+  }, [location.search]);
 
   const fetchProvinces = async () => {
     try {
@@ -75,22 +71,24 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    const orderDetail = products.map((product, index) => ({
-      product: { id: product.id },
-      qty: quantities[index],
-      price: product.price * quantities[index],
-    }));
+    const orderDetail = [
+      {
+        product: { id: id },
+        price: product.price * quantity,
+        qty: quantity,
+      },
+    ];
 
     const orderData = {
       user: { id: user.id },
       ward: { id: selectedWardId },
       type: "BUY",
-      price: totalPrice,
+      price: product.price * quantity,
       payment: payment,
-      address: address,
       phone: phone,
+      address: address,
       orderDetails: orderDetail,
-    }
+    };
 
     try {
       const response = await createOrder(orderData);
@@ -99,7 +97,6 @@ const Checkout = () => {
         setTimeout(() => {
           navigate("/orders");
         }, 1000);
-        localStorage.removeItem("cart");
       } else {
         alert("Failed to place order. Please try again.");
       }
@@ -110,11 +107,9 @@ const Checkout = () => {
   };
 
   useEffect(() => {
-    if (ids.length > 0) {
-      fetchProducts();
-    }
+    fetchProduct();
     fetchProvinces();
-  }, []);
+  }, [id]);
 
   return (
     <div className="max-w-7xl mx-auto flex gap-5 py-5">
@@ -227,10 +222,7 @@ const Checkout = () => {
           </div>
           <div style={{ marginTop: "30px" }}>
             <h3 className="text-2xl font-semibold">Payment Method</h3>
-            <RadioGroup
-              value={payment}
-              onChange={(e) => setPayment(e.target.value)}
-            >
+            <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
               <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
             </RadioGroup>
@@ -240,28 +232,23 @@ const Checkout = () => {
           </Button>
         </div>
       </div>
-      <div className="w-[380px] h-max">
-        <div className="bg-gray-200 border rounded p-4">
-          <h3 className="text-2xl font-semibold mb-4">Order Summary</h3>
-          <div className="w-full">
-            {products.map((product, index) => {
-              const quantity = quantities[index];
-              const totalPricePerItem = product.price * quantity;
 
-              return (
-                <div key={product.id} className="w-full flex gap-4 mb-4">
-                  <img src={product.images?.[0]} alt={product.name} className="w-32 h-32 object-cover" />
-                  <div>
-                    <h3 className="text-xl font-semibold">{product.name}</h3>
-                    <p className="text-lg">Quantity: {quantity}</p>
-                    <p className="text-lg">Price: ${totalPricePerItem.toFixed(2)}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="w-full mt-4 pt-4">
-            <p className="text-xl font-semibold">Total Price: ${totalPrice}</p>
+      <Snackbar
+        open={showSuccessToast}
+        message="Order placed successfully!"
+        autoHideDuration={3000}
+        onClose={() => setShowSuccessToast(false)}
+      />
+
+      <div className="w-[380px] bg-gray-200 border rounded h-max p-4">
+        <h3 className="text-2xl font-semibold mb-4">Order Summary</h3>
+        <div className="flex gap-4">
+          <img src={product.images?.[0]} alt={product.name} className="w-32 h-32 object-cover" />
+          <div>
+            <h3 className="text-xl font-semibold">{product.name}</h3>
+            <p className="text-lg">Price: ${product.price}</p>
+            <p className="text-lg">Quantity: {quantity}</p>
+            <p className="text-lg">Total Price: ${product.price * quantity}</p>
           </div>
         </div>
       </div>
@@ -269,4 +256,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default CheckoutProduct;

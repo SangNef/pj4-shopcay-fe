@@ -1,36 +1,40 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../../api/product";
-import defaultImage from "../../assets/9.png"; // Ensure you have a default image
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
-import { useNavigate } from "react-router-dom";
-import { MenuItem, Select, InputLabel, FormControl, TextField, Button, Snackbar, Alert, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import { Button, FormControlLabel, Radio, RadioGroup, Snackbar } from "@mui/material";
+import { addDays, format, differenceInCalendarDays } from "date-fns";
 
 const Rent = () => {
+  const { id } = useParams();
+  const location = useLocation();
   const [product, setProduct] = useState({});
-  const [shippingAddress, setShippingAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [rentDays, setRentDays] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState(""); // New state for payment method
+  const [quantity, setQuantity] = useState(1);
   const [provinces, setProvinces] = useState([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState(null);
   const [districts, setDistricts] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState(null);
   const [wards, setWards] = useState([]);
   const [selectedWardId, setSelectedWardId] = useState(null);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  const productRent = JSON.parse(localStorage.getItem("productRent"));
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [rentStart, setRentStart] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
+  const [rentEnd, setRentEnd] = useState(format(addDays(new Date(), 2), "yyyy-MM-dd"));
+  const [payment, setPayment] = useState("PAY");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [totalPrice, setTotalPrice] = useState(0);
+
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchProduct();
-    fetchProvinces();
-  }, []);
-
   const fetchProduct = async () => {
-    const data = await getProduct(productRent.id);
-    setProduct(data);
+    try {
+      const data = await getProduct(id);
+      setProduct(data);
+    } catch (error) {
+      console.error("Failed to fetch product data:", error);
+    }
   };
 
   const fetchProvinces = async () => {
@@ -43,41 +47,56 @@ const Rent = () => {
   };
 
   const fetchDistricts = async (provinceId) => {
-    const response = await getDistricts(provinceId);
-    setDistricts(response);
+    try {
+      const response = await getDistricts(provinceId);
+      setDistricts(Array.isArray(response) ? response : []);
+      setWards([]); // Clear wards when a new province is selected
+      setSelectedWardId(null); // Reset selected ward
+    } catch (error) {
+      console.error("Error fetching districts:", error);
+    }
   };
 
   const fetchWards = async (districtId) => {
-    const response = await getWards(districtId);
-    setWards(response);
+    try {
+      const response = await getWards(districtId);
+      setWards(Array.isArray(response) ? response : []);
+    } catch (error) {
+      console.error("Error fetching wards:", error);
+    }
   };
 
-  const handleRent = async () => {
-    if (!paymentMethod) {
-      alert("Please select a payment method.");
-      return;
-    }
-  
-    // Prepare the order details as per the required payload format
+  const handleRentStartChange = (e) => {
+    const newRentStart = e.target.value;
+    setRentStart(newRentStart);
+
+    // Set rentEnd to one day after rentStart if rentEnd is earlier than this
+    const minimumRentEnd = format(addDays(new Date(newRentStart), 1), "yyyy-MM-dd");
+    setRentEnd((prevRentEnd) => (new Date(prevRentEnd) < new Date(minimumRentEnd) ? minimumRentEnd : prevRentEnd));
+  };
+
+  const handlePlaceOrder = async () => {
+    const orderDetail = [
+      {
+        product: { id: id },
+        price: product.price * quantity,
+        qty: quantity,
+      },
+    ];
+
     const orderData = {
-      user: { id: user.id }, // User ID from localStorage
-      product: { id: product.id }, // Product ID from the state
-      ward: { id: selectedWardId }, // Selected Ward ID from the state
-      type: "RENT", // Type of order
-      rentDay: rentDays, // Number of rental days from the state
-      price: product.rentPrice * rentDays, // Price based on rent days
-      payment: paymentMethod, // Payment method selected
-      phone: phoneNumber, // Phone number from the state
-      address: shippingAddress, // Shipping address from the state
-      orderDetails: [
-        {
-          product: { id: product.id }, // Product ID
-          price: product.rentPrice, // Product rent price
-          qty: productRent.quantity, // Quantity from localStorage
-        },
-      ],
+      user: { id: user.id },
+      ward: { id: selectedWardId },
+      type: "RENT",
+      price: totalPrice,
+      payment: payment,
+      phone: phone,
+      address: address,
+      orderDetails: orderDetail,
+      rentStart: rentStart,
+      rentEnd: rentEnd,
     };
-  
+
     try {
       const response = await createOrder(orderData);
       if (response) {
@@ -89,196 +108,205 @@ const Rent = () => {
         alert("Failed to place order. Please try again.");
       }
     } catch (error) {
-      console.error("Error creating order:", error);
-      alert("An error occurred. Please try again.");
+      console.error("Error placing order:", error);
+      alert("An error occurred while placing the order. Please try again.");
     }
   };
-  
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const qty = queryParams.get("qty");
+    if (qty) {
+      setQuantity(Number(qty));
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchProvinces();
+  }, [id]);
+
+  useEffect(() => {
+    if (product.price && rentStart && rentEnd) {
+      const rentalDays = differenceInCalendarDays(new Date(rentEnd), new Date(rentStart));
+      if (rentalDays > 0) {
+        setTotalPrice(rentalDays * product.rentPrice * quantity);
+      } else {
+        setTotalPrice(0);
+      }
+    }
+  }, [product.price, rentStart, rentEnd, quantity]);
+
   return (
-    <div
-      style={{
-        maxWidth: "1280px",
-        margin: "0 auto",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        display: "flex",
-        gap: "20px",
-      }}
-    >
-      <div style={{ flex: "2", background: "#fff" }}>
-        <h1 style={{ textAlign: "center", color: "#333" }}>Rent Product</h1>
-        <div style={{ borderTop: "1px solid #ddd", paddingTop: "20px" }}>
-          <h3 style={{ marginBottom: "20px", color: "#333" }}>Shipping Information</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <TextField
-              label="Full Name"
-              variant="outlined"
-              fullWidth
-              value={user.fullname}
-              size="small"
-              disabled
-              inputProps={{ style: { height: "35px", fontSize: "14px" } }}
-            />
-            <TextField
-              label="Email"
-              variant="outlined"
-              fullWidth
-              value={user.email}
-              size="small"
-              disabled
-              inputProps={{ style: { height: "35px", fontSize: "14px" } }}
-            />
-            <TextField
-              label="Shipping Address"
-              variant="outlined"
-              fullWidth
-              value={shippingAddress}
-              size="small"
-              onChange={(e) => setShippingAddress(e.target.value)}
-              required
-              inputProps={{ style: { height: "35px", fontSize: "14px" } }}
-            />
-            <FormControl fullWidth variant="outlined" sx={{ height: "50px", fontSize: "16px", padding: "8px 0" }}>
-              <InputLabel>Province</InputLabel>
-              <Select
-                value={selectedProvinceId || ""}
-                onChange={(e) => {
-                  setSelectedProvinceId(e.target.value);
-                  setDistricts([]);
-                  setWards([]);
-                  fetchDistricts(e.target.value);
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 200,
-                    },
-                  },
-                }}
-              >
-                {provinces.map((province) => (
-                  <MenuItem key={province.id} value={province.id}>
-                    {province.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth variant="outlined" sx={{ height: "50px", fontSize: "16px", padding: "8px 0" }}>
-              <InputLabel>District</InputLabel>
-              <Select
-                value={selectedDistrictId || ""}
-                onChange={(e) => {
-                  setSelectedDistrictId(e.target.value);
-                  setWards([]);
-                  fetchWards(e.target.value);
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 200,
-                    },
-                  },
-                }}
-              >
-                {districts.map((district) => (
-                  <MenuItem key={district.id} value={district.id}>
-                    {district.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth variant="outlined" sx={{ height: "50px", fontSize: "16px", padding: "8px 0" }}>
-              <InputLabel>Ward</InputLabel>
-              <Select
-                value={selectedWardId || ""}
-                onChange={(e) => setSelectedWardId(e.target.value)}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 200,
-                    },
-                  },
-                }}
-              >
-                {wards.map((ward) => (
-                  <MenuItem key={ward.id} value={ward.id}>
-                    {ward.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Phone Number"
-              variant="outlined"
-              fullWidth
-              value={phoneNumber}
-              size="small"
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              required
-              inputProps={{ style: { height: "35px", fontSize: "14px" } }}
-            />
-            <TextField
-              label="Number of Rental Days"
-              variant="outlined"
-              type="number"
-              size="small"
-              fullWidth
-              value={rentDays}
-              onChange={(e) => setRentDays(e.target.value)}
-              inputProps={{ min: 1, style: { height: "35px", fontSize: "14px" } }}
-            />
-
-            {/* Payment Method Selection */}
-            <div style={{ marginTop: "30px" }}>
-              <h3 style={{ color: "#333" }}>Payment Method</h3>
-              <RadioGroup 
-                value={paymentMethod} 
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <FormControlLabel value="PAYPAL" control={<Radio />} label="PayPal" checked />
-                <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
-              </RadioGroup>
+    <div className="max-w-7xl mx-auto flex gap-5 py-5">
+      <div className="w-[calc(100%-400px)]">
+        <h2 className="w-full border-b text-center text-4xl font-semibold">Rent Product</h2>
+        <div className="w-full mt-6">
+          <h3 className="text-2xl font-semibold mb-4">Billing and Shipping Information</h3>
+          <div className="w-full mb-4 flex gap-4">
+            <div className="flex-1">
+              <label htmlFor="name" className="block text-sm">
+                Name
+              </label>
+              <input type="text" id="name" className="w-full border rounded p-2" value={user.fullname} disabled />
             </div>
-          </form>
-        </div>
+            <div className="flex-1">
+              <label htmlFor="email" className="block text-sm">
+                Email
+              </label>
+              <input type="text" id="email" className="w-full border rounded p-2" value={user.email} disabled />
+            </div>
+          </div>
 
-        <div style={{ marginTop: "30px", textAlign: "center" }}>
-          <Button variant="contained" color="success" onClick={handleRent}>
-            Confirm Rent
+          <div className="w-full mb-4">
+            <label htmlFor="province" className="block text-sm">
+              Province
+            </label>
+            <select
+              id="province"
+              className="w-full border rounded p-2"
+              value={selectedProvinceId || ""}
+              onChange={(e) => {
+                setSelectedProvinceId(e.target.value);
+                fetchDistricts(e.target.value);
+              }}
+            >
+              <option value="">Select a province</option>
+              {provinces.map((province) => (
+                <option key={province.id} value={province.id}>
+                  {province.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full mb-4">
+            <label htmlFor="district" className="block text-sm">
+              District
+            </label>
+            <select
+              id="district"
+              className="w-full border rounded p-2"
+              value={selectedDistrictId || ""}
+              onChange={(e) => {
+                setSelectedDistrictId(e.target.value);
+                fetchWards(e.target.value);
+              }}
+              disabled={!selectedProvinceId}
+            >
+              <option value="">Select a district</option>
+              {districts.map((district) => (
+                <option key={district.id} value={district.id}>
+                  {district.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full mb-4">
+            <label htmlFor="ward" className="block text-sm">
+              Ward
+            </label>
+            <select
+              id="ward"
+              className="w-full border rounded p-2"
+              value={selectedWardId || ""}
+              onChange={(e) => setSelectedWardId(e.target.value)}
+              disabled={!selectedDistrictId}
+            >
+              <option value="">Select a ward</option>
+              {wards.map((ward) => (
+                <option key={ward.id} value={ward.id}>
+                  {ward.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="w-full mb-4 flex gap-4">
+            <div className="w-full">
+              <label htmlFor="address" className="block text-sm">
+                Address
+              </label>
+              <input
+                id="address"
+                className="w-full border rounded p-2"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+            <div className="w-full">
+              <label htmlFor="phone" className="block text-sm">
+                Phone
+              </label>
+              <input
+                id="phone"
+                className="w-full border rounded p-2"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="w-full mb-4 flex gap-4">
+            <div className="flex-1">
+              <label htmlFor="rent_start" className="block text-sm">
+                Rent Start
+              </label>
+              <input
+                type="date"
+                id="rent_start"
+                className="w-full border rounded p-2"
+                value={rentStart}
+                min={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+                onChange={handleRentStartChange}
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="rent_end" className="block text-sm">
+                Rent End
+              </label>
+              <input
+                type="date"
+                id="rent_end"
+                className="w-full border rounded p-2"
+                value={rentEnd}
+                min={format(addDays(new Date(rentStart), 1), "yyyy-MM-dd")}
+                onChange={(e) => setRentEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <div style={{ marginTop: "30px" }}>
+            <h3 className="text-2xl font-semibold">Payment Method</h3>
+            <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
+              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
+              <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
+            </RadioGroup>
+          </div>
+          <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
+            Place Order
           </Button>
         </div>
       </div>
 
-      {/* Product Info */}
-      <div style={{ flex: "1", marginLeft: "20px", background: "#fff" }}>
-        {product ? (
-          <div style={{ display: "flex", border: "1px solid #ccc", boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)" }}>
-            <img
-              src={product?.images?.[0] || defaultImage}
-              alt={product.name}
-              style={{ width: "100%", maxWidth: "200px", borderRadius: "8px" }}
-            />
-            <div style={{ marginLeft: "20px" }}>
-              <h2 style={{ color: "#333" }}>{product.name}</h2>
-              <p style={{ fontWeight: "bold" }}>Price: ${product.rentPrice}</p>
-              <p style={{ fontWeight: "bold" }}>Quantity: {productRent.quantity}</p>
-              <p style={{ fontWeight: "bold" }}>Total: ${product.rentPrice * productRent.quantity}</p>
+      <div className="w-[380px]">
+        <div className="bg-gray-200 border rounded h-max p-4">
+          <h3 className="text-2xl font-semibold mb-4">Order Summary</h3>
+          <div className="flex gap-4">
+            <img src={product.images?.[0]} alt={product.name} className="w-32 h-32 object-cover" />
+            <div>
+              <h3 className="text-xl font-semibold">{product.name}</h3>
+              <p className="text-lg"><span className="font-semibold">Price: </span>${product.rentPrice}</p>
+              <p className="text-lg"><span className="font-semibold">Quantity: </span>{quantity}</p>
+              <p className="text-lg"><span className="font-semibold">Total Price: </span>${product.rentPrice * quantity}</p>
             </div>
           </div>
-        ) : (
-          <p>Loading product details...</p>
-        )}
+        </div>
+        <div className="bg-gray-200 border rounded h-max p-4 mt-4">
+          <h3 className="text-2xl font-semibold mb-4">Rent Details</h3>
+          <p className="text-lg"><span className="font-semibold">Product Price: </span>${product.rentPrice * quantity}</p>
+          <p className="text-xl"><span className="font-semibold">Rent Day: </span>{differenceInCalendarDays(new Date(rentEnd), new Date(rentStart))} days</p>
+          <p className="text-xl"><span className="font-semibold">Total: </span>${totalPrice}</p>
+        </div>
       </div>
-
-      <Snackbar
-        open={showSuccessToast}
-        autoHideDuration={3000}
-        onClose={() => setShowSuccessToast(false)}
-      >
-        <Alert onClose={() => setShowSuccessToast(false)} severity="success" sx={{ width: "100%" }}>
-          Order placed successfully!
-        </Alert>
-      </Snackbar>
     </div>
   );
 };

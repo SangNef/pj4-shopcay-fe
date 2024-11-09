@@ -10,6 +10,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PeopleIcon from '@mui/icons-material/People';
+import FeedbackIcon from '@mui/icons-material/Feedback';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -17,6 +18,7 @@ const menuItems = [
   { text: 'Products', icon: <ShoppingCartIcon sx={{ color: '#fff' }} />, path: '/admin/products' },
   { text: 'Orders', icon: <ReceiptIcon sx={{ color: '#fff' }} />, path: '/admin/orders' },
   { text: 'Users', icon: <PeopleIcon sx={{ color: '#fff' }} />, path: '/admin/users' },
+  { text: 'Feedback', icon: <FeedbackIcon sx={{ color: '#fff' }} />, path: '/admin/feedback' }, // Changed icon to FeedbackIcon
   { text: 'Settings', icon: <SettingsIcon sx={{ color: '#fff' }} />, path: '/admin/settings' },
   { text: 'Logout', icon: <ExitToAppIcon sx={{ color: '#fff' }} />, path: '/logout' },
 ];

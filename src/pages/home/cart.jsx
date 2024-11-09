@@ -34,172 +34,113 @@ const Cart = () => {
     }
   }, [cartItems]);
 
-  // Handle quantity change
   const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity < 1) return; // Prevent negative or zero quantity
+    if (newQuantity < 1) return;
 
-    // Update the product quantity in the state
-    setProducts(prevProducts =>
-      prevProducts.map(product =>
-        product.id === productId ? { ...product, quantity: newQuantity } : product
-      )
-    );
-
-    // Update the quantity in localStorage
-    const updatedCart = cartItems.map(item =>
+    const updatedCart = cartItems.map((item) =>
       item.productId === productId ? { ...item, quantity: newQuantity } : item
     );
+
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     setCartItems(updatedCart);
   };
 
-  // Handle item removal
   const handleItemRemove = (productId) => {
-    // Remove the product from both the state and localStorage
     const updatedCart = cartItems.filter(item => item.productId !== productId);
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
-    // Remove the product from the products array
     const updatedProducts = products.filter(product => product.id !== productId);
     setProducts(updatedProducts);
     window.location.reload();
   };
 
-  // Calculate total price of all items in the cart
   const totalPrice = products.reduce((total, product) => total + product.price * product.quantity, 0);
 
   const handleCheckout = () => {
     navigate('/checkout');
-  }
+  };
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '20px' }}>
-      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>Cart Details</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={headerStyle}>Product</th>
-            <th style={headerStyle}>Price</th>
-            <th style={headerStyle}>Quantity</th>
-            <th style={headerStyle}>Total</th>
-            <th style={headerStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map(product => (
-            <tr key={product.id} style={{ borderBottom: '1px solid #ddd' }}>
-              <td style={cellStyle}>
-                <div style={flexContainer}>
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '4px',
-                      objectFit: 'cover',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <span style={{ fontSize: '16px', fontWeight: '500' }}>{product.name}</span>
-                </div>
-              </td>
-              <td style={cellStyle}>${product.price}</td>
-              <td style={cellStyle}>
-                <button
-                  onClick={() => handleQuantityChange(product.id, product.quantity - 1)}
-                  style={buttonStyle}
-                >
-                  -
-                </button>
-                <span style={{ margin: '0 10px' }}>{product.quantity}</span>
-                <button
-                  onClick={() => handleQuantityChange(product.id, product.quantity + 1)}
-                  style={buttonStyle}
-                >
-                  +
-                </button>
-              </td>
-              <td style={cellStyle}>${(product.price * product.quantity)}</td>
-              <td style={cellStyle}>
-                <button
-                  onClick={() => handleItemRemove(product.id)}
-                  style={deleteButtonStyle}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="max-w-7xl mx-auto p-6">
+      <h2 className="text-2xl font-semibold mb-6">Cart Details</h2>
 
-      {/* Total Price Display */}
-      <div style={{ marginTop: '20px', fontSize: '18px', fontWeight: '600' }}>
-        <p>Total Price: ${totalPrice}</p>
-      </div>
+      {/* Check if cart is empty */}
+      {cartItems.length === 0 ? (
+        <p className="text-lg text-gray-600">Cart is empty</p>
+      ) : (
+        <>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="text-lg p-4 text-left bg-gray-100 border-b-2 border-gray-300">Product</th>
+                <th className="text-lg p-4 text-left bg-gray-100 border-b-2 border-gray-300">Price</th>
+                <th className="text-lg p-4 text-left bg-gray-100 border-b-2 border-gray-300">Quantity</th>
+                <th className="text-lg p-4 text-left bg-gray-100 border-b-2 border-gray-300">Total</th>
+                <th className="text-lg p-4 text-left bg-gray-100 border-b-2 border-gray-300">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(product => (
+                <tr key={product.id} className="border-b border-gray-200">
+                  <td className="p-4">
+                    <div className="flex items-center">
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-20 h-20 rounded object-cover mr-4"
+                      />
+                      <span className="text-lg font-medium">{product.name}</span>
+                    </div>
+                  </td>
+                  <td className="p-4">${product.price}</td>
+                  <td className="p-4 flex items-center">
+                    <button
+                      onClick={() => handleQuantityChange(product.id, product.quantity - 1)}
+                      className="w-8 h-8 text-xl text-center bg-gray-300 rounded mr-2 flex items-center justify-center"
+                    >
+                      -
+                    </button>
+                    <span className="mx-2">{product.quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange(product.id, product.quantity + 1)}
+                      className="w-8 h-8 text-xl text-center bg-gray-300 rounded flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                  </td>
+                  <td className="p-4">${(product.price * product.quantity).toFixed(2)}</td>
+                  <td className="p-4">
+                    <button
+                      onClick={() => handleItemRemove(product.id)}
+                      className="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* Checkout Button */}
-      <div style={{ marginTop: '20px' }}>
-        <button style={checkoutButtonStyle} onClick={() => handleCheckout()}>
-          Checkout
-        </button>
-      </div>
+          {/* Total Price Display */}
+          <div className="mt-6 text-lg font-semibold">
+            <p>Total Price: ${totalPrice.toFixed(2)}</p>
+          </div>
+
+          {/* Checkout Button */}
+          <div className="mt-6">
+            <button
+              className="px-5 py-3 text-lg font-semibold text-white bg-blue-500 rounded hover:bg-blue-600"
+              onClick={handleCheckout}
+            >
+              Checkout
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
-};
-
-// Inline CSS styles
-const headerStyle = {
-  fontSize: '18px',
-  padding: '10px',
-  textAlign: 'left',
-  backgroundColor: '#f5f5f5',
-  borderBottom: '2px solid #ccc',
-};
-
-const cellStyle = {
-  padding: '10px',
-  textAlign: 'left',
-};
-
-const flexContainer = {
-  display: 'flex',
-  alignItems: 'center',
-};
-
-const buttonStyle = {
-  width: '30px',
-  height: '30px',
-  fontSize: '18px',
-  textAlign: 'center',
-  borderRadius: '4px',
-  backgroundColor: '#ddd',
-  cursor: 'pointer',
-  border: 'none',
-  margin: '0 5px',
-};
-
-const deleteButtonStyle = {
-  padding: '5px 10px',
-  fontSize: '14px',
-  backgroundColor: '#FF6347',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const checkoutButtonStyle = {
-  padding: '10px 20px',
-  fontSize: '16px',
-  fontWeight: '600',
-  backgroundColor: '#007BFF',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
 };
 
 export default Cart;
