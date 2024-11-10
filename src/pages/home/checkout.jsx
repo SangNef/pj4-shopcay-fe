@@ -3,6 +3,7 @@ import { getProduct } from "../../api/product";
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
 import { Button, FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const Checkout = () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -35,7 +36,6 @@ const Checkout = () => {
       const results = await Promise.all(productPromises);
       setProducts(results);
 
-      // Calculate the total price based on fetched products and quantities
       const total = results.reduce((acc, product, index) => {
         return acc + product.price * quantities[index];
       }, 0);
@@ -58,8 +58,8 @@ const Checkout = () => {
     try {
       const response = await getDistricts(provinceId);
       setDistricts(Array.isArray(response) ? response : []);
-      setWards([]); // Clear wards when a new province is selected
-      setSelectedWardId(null); // Reset selected ward
+      setWards([]);
+      setSelectedWardId(null);
     } catch (error) {
       console.error("Error fetching districts:", error);
     }
@@ -86,9 +86,9 @@ const Checkout = () => {
       ward: { id: selectedWardId },
       type: "BUY",
       price: totalPrice,
-      payment: payment,
-      address: address,
-      phone: phone,
+      payment,
+      address,
+      phone,
       orderDetails: orderDetail,
     }
 
@@ -107,6 +107,11 @@ const Checkout = () => {
       console.error("Error placing order:", error);
       alert("An error occurred while placing the order. Please try again.");
     }
+  };
+
+  const handlePayPalSuccess = async (details) => {
+    console.log("Payment completed successfully:", details);
+    handlePlaceOrder(); // Call order creation after successful payment
   };
 
   useEffect(() => {
@@ -235,9 +240,35 @@ const Checkout = () => {
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
             </RadioGroup>
           </div>
-          <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
-            Place Order
-          </Button>
+
+          {payment === "PAY" && (
+            <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}>
+              <PayPalButtons
+                style={{ layout: "vertical" }}
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [{
+                      amount: {
+                        value: totalPrice.toFixed(2),
+                      },
+                    }],
+                  });
+                }}
+                onApprove={(data, actions) => {
+                  return actions.order.capture().then(handlePayPalSuccess);
+                }}
+                onError={(error) => {
+                  console.error("PayPal payment error:", error);
+                }}
+              />
+            </PayPalScriptProvider>
+          )}
+          
+          {payment === "CASH" && (
+            <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
+              Place Order
+            </Button>
+          )}
         </div>
       </div>
       <div className="w-[380px] h-max">
