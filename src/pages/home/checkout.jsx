@@ -81,14 +81,16 @@ const Checkout = () => {
       price: product.price * quantities[index],
     }));
 
+    const checkout = JSON.parse(localStorage.getItem("checkout")) || {};
+
     const orderData = {
       user: { id: user.id },
-      ward: { id: selectedWardId },
+      ward: { id: checkout.selectedWardId },
       type: "BUY",
       price: totalPrice,
       payment,
-      address,
-      phone,
+      address: checkout.address,
+      phone: checkout.phone,
       orderDetails: orderDetail,
     }
 
@@ -96,6 +98,7 @@ const Checkout = () => {
       const response = await createOrder(orderData);
       if (response) {
         setShowSuccessToast(true);
+        localStorage.removeItem("checkout");
         setTimeout(() => {
           navigate("/orders");
         }, 1000);
@@ -115,11 +118,49 @@ const Checkout = () => {
   };
 
   useEffect(() => {
+    const storedCheckoutData = JSON.parse(localStorage.getItem("checkout")) || {};
+    setSelectedProvinceId(storedCheckoutData.selectedProvinceId || null);
+    setSelectedDistrictId(storedCheckoutData.selectedDistrictId || null);
+    setSelectedWardId(storedCheckoutData.selectedWardId || null);
+    setAddress(storedCheckoutData.address || "");
+    setPhone(storedCheckoutData.phone || "");
+    setPayment(storedCheckoutData.payment || "PAY");
+
     if (ids.length > 0) {
       fetchProducts();
     }
     fetchProvinces();
   }, []);
+
+  const handleChange = (field, value) => {
+    const updatedData = {
+      selectedProvinceId,
+      selectedDistrictId,
+      selectedWardId,
+      address,
+      phone,
+      payment,
+      [field]: value,
+    };
+    localStorage.setItem("checkout", JSON.stringify(updatedData));
+
+    // Update local state
+    if (field === "selectedProvinceId") {
+      setSelectedProvinceId(value);
+      fetchDistricts(value);
+    } else if (field === "selectedDistrictId") {
+      setSelectedDistrictId(value);
+      fetchWards(value);
+    } else if (field === "selectedWardId") {
+      setSelectedWardId(value);
+    } else if (field === "address") {
+      setAddress(value);
+    } else if (field === "phone") {
+      setPhone(value);
+    } else if (field === "payment") {
+      setPayment(value);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto flex gap-5 py-5">
@@ -150,10 +191,7 @@ const Checkout = () => {
               id="province"
               className="w-full border rounded p-2"
               value={selectedProvinceId || ""}
-              onChange={(e) => {
-                setSelectedProvinceId(e.target.value);
-                fetchDistricts(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedProvinceId", e.target.value)}
             >
               <option value="">Select a province</option>
               {provinces.map((province) => (
@@ -172,10 +210,7 @@ const Checkout = () => {
               id="district"
               className="w-full border rounded p-2"
               value={selectedDistrictId || ""}
-              onChange={(e) => {
-                setSelectedDistrictId(e.target.value);
-                fetchWards(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedDistrictId", e.target.value)}
               disabled={!selectedProvinceId}
             >
               <option value="">Select a district</option>
@@ -195,7 +230,7 @@ const Checkout = () => {
               id="ward"
               className="w-full border rounded p-2"
               value={selectedWardId || ""}
-              onChange={(e) => setSelectedWardId(e.target.value)}
+              onChange={(e) => handleChange("selectedWardId", e.target.value)}
               disabled={!selectedDistrictId}
             >
               <option value="">Select a ward</option>
@@ -215,7 +250,7 @@ const Checkout = () => {
                 id="address"
                 className="w-full border rounded p-2"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => handleChange("address", e.target.value)}
               />
             </div>
             <div className="w-full">
@@ -226,7 +261,7 @@ const Checkout = () => {
                 id="phone"
                 className="w-full border rounded p-2"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => handleChange("phone", e.target.value)}
               />
             </div>
           </div>
@@ -242,7 +277,7 @@ const Checkout = () => {
           </div>
 
           {payment === "PAY" && (
-            <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}>
+            <PayPalScriptProvider options={{ "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8" }}>
               <PayPalButtons
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {

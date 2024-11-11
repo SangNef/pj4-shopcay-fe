@@ -72,7 +72,7 @@ const ProductDetail = () => {
             alt={product.name}
             style={{ width: "450px", height: "500px", objectFit: "cover" }}
           />
-          <div>
+          <div className="flex gap-4 max-w-[450px] overflow-x-auto">
             {product?.images?.map((image, index) => (
               <img
                 key={index}

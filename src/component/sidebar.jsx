@@ -17,10 +17,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon sx={{ color: '#fff' }} />, path: '/admin' },
   { text: 'Products', icon: <ShoppingCartIcon sx={{ color: '#fff' }} />, path: '/admin/products' },
   { text: 'Orders', icon: <ReceiptIcon sx={{ color: '#fff' }} />, path: '/admin/orders' },
-  { text: 'Users', icon: <PeopleIcon sx={{ color: '#fff' }} />, path: '/admin/users' },
-  { text: 'Feedback', icon: <FeedbackIcon sx={{ color: '#fff' }} />, path: '/admin/feedback' }, // Changed icon to FeedbackIcon
-  { text: 'Settings', icon: <SettingsIcon sx={{ color: '#fff' }} />, path: '/admin/settings' },
-  { text: 'Logout', icon: <ExitToAppIcon sx={{ color: '#fff' }} />, path: '/logout' },
+  { text: 'Users', icon: <PeopleIcon sx={{ color: '#fff' }} />, path: '/admin/customers' },
 ];
 
 const Sidebar = () => {

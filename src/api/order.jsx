@@ -4,9 +4,13 @@ export const createOrder = async (data) => {
   return post("/orders", data);
 };
 
-export const getOrders = async (page, size) => {
-  const response = await get(`/orders?page=${page}&size=${size}`);
-  return response; // assuming the API returns data with 'data' key
+export const getOrders = async (page, size, status) => {
+  let url = `/orders?page=${page}&size=${size}`;
+  if (status !== "") {
+    url += `&status=${status}`; // Add status filter if provided
+  }
+  const response = await get(url);
+  return response; // assuming the API returns data with 'content' and 'totalPages'
 };
 
 export const getProvinces = async () => {

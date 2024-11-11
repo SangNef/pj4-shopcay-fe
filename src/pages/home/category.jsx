@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getFruitTrees, getFlowers, getShadeTrees, getOrnamentalTrees, getEvergreenTrees } from "../../api/product"; // Import your API functions
 import ov from "../../assets/sp_msph_lv.jpg";
 import defaultImg from "../../assets/9.png";
@@ -7,6 +7,8 @@ import defaultImg from "../../assets/9.png";
 const Category = () => {
   const { category } = useParams(); // Get the category from the URL
   const [products, setProducts] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch products based on the category
@@ -40,7 +42,7 @@ const Category = () => {
 
   const handleBuyNow = (productId) => {
     // Implement your buy now logic, e.g., navigate to checkout
-    console.log(`Buy now for product ID: ${productId}`);
+    navigate(`/checkout/${productId}/?qty=1`);
   };
 
   const handleAddToCart = (productId) => {
@@ -53,6 +55,7 @@ const Category = () => {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.location.reload(); // Reload the page to update the cart icon
     console.log(`Product ${productId} added to cart with quantity 1`);
   };
 

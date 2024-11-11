@@ -10,6 +10,10 @@ import {
   Paper,
   Typography,
   Pagination,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -18,12 +22,13 @@ const Order = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Track the total number of pages
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState(""); // State for selected status filter
 
   const navigate = useNavigate();
 
-  const fetchOrders = async (page) => {
+  const fetchOrders = async (page, status) => {
     try {
-      const data = await getOrders(page, 10); // 10 orders per page
+      const data = await getOrders(page, 10, status); // Send status filter as a parameter
       setOrders(data.content); // content contains the orders
       setTotalPages(data.totalPages); // totalPages will help in pagination
       setLoading(false);
@@ -34,8 +39,8 @@ const Order = () => {
   };
 
   useEffect(() => {
-    fetchOrders(page - 1); // page is 1-based, so subtract 1 for the backend
-  }, [page]);
+    fetchOrders(page - 1, statusFilter); // page is 1-based, so subtract 1 for the backend
+  }, [page, statusFilter]);
 
   const getStatusDetails = (status) => {
     switch (status) {
@@ -65,6 +70,24 @@ const Order = () => {
       <Typography variant="h4" gutterBottom>
         Order List
       </Typography>
+
+      {/* Status Filter Select */}
+      <FormControl style={{ marginBottom: "20px" }} className="w-40">
+        <InputLabel>Status</InputLabel>
+        <Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          label="Status"
+        >
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="0">Pending</MenuItem>
+          <MenuItem value="1">Confirmed</MenuItem>
+          <MenuItem value="2">Shipping</MenuItem>
+          <MenuItem value="3">Delivered</MenuItem>
+          <MenuItem value="4">Completed</MenuItem>
+          <MenuItem value="5">Cancelled</MenuItem>
+        </Select>
+      </FormControl>
 
       <TableContainer component={Paper} elevation={3}>
         <Table sx={{ minWidth: 650 }} aria-label="order table">

@@ -1,4 +1,4 @@
-import { post, put } from "./index";
+import { get, post, put } from "./index";
 
 export const register = async (userData) => {
   return await post("/auth/register", userData);
@@ -15,3 +15,7 @@ export const updateProfile = async (id, userData) => {
 export const updatePassword = async (id, userData) => {
   return await put(`/auth/update-password?userId=${id}`, userData);
 };
+
+export const getAllUsers = async () => {
+  return await get("/auth/users");
+}

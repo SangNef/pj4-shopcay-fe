@@ -1,7 +1,8 @@
 import { get, post, put } from "./index";
 
-export const getProducts = async () => {
-  return await get("/products/all");
+export const getProducts = async (name = "") => {
+  const response = await get(`/products/all?name=${name}`);
+  return response;
 };
 
 export const getActiveProducts = async () => {

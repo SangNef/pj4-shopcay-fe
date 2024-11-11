@@ -4,6 +4,7 @@ import { getProduct } from "../../api/product";
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
 import { Button, FormControlLabel, Radio, RadioGroup, Snackbar } from "@mui/material";
 import { addDays, format, differenceInCalendarDays } from "date-fns";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const Rent = () => {
   const { id } = useParams();
@@ -67,8 +68,24 @@ const Rent = () => {
   };
 
   const handleRentStartChange = (e) => {
+    const storedCheckoutData = JSON.parse(localStorage.getItem("checkout")) || {};
+
     const newRentStart = e.target.value;
     setRentStart(newRentStart);
+
+    // push to local storage
+    const updatedData = {
+      selectedProvinceId: storedCheckoutData.selectedProvinceId,
+      selectedDistrictId: storedCheckoutData.selectedDistrictId,
+      selectedWardId: storedCheckoutData.selectedWardId,
+      address: storedCheckoutData.address,
+      phone: storedCheckoutData.phone,
+      payment: storedCheckoutData.payment,
+      rentStart: newRentStart,
+      rentEnd: storedCheckoutData.rentEnd,
+    };
+
+    localStorage.setItem("checkout", JSON.stringify(updatedData));
 
     // Set rentEnd to one day after rentStart if rentEnd is earlier than this
     const minimumRentEnd = format(addDays(new Date(newRentStart), 1), "yyyy-MM-dd");
@@ -84,23 +101,26 @@ const Rent = () => {
       },
     ];
 
+    const checkout = JSON.parse(localStorage.getItem("checkout")) || {};
+
     const orderData = {
       user: { id: user.id },
       ward: { id: selectedWardId },
       type: "RENT",
       price: totalPrice,
       payment: payment,
-      phone: phone,
-      address: address,
-      orderDetails: orderDetail,
-      rentStart: rentStart,
-      rentEnd: rentEnd,
+      address: checkout.address,
+      phone: checkout.phone,
+      orderDetail: orderDetail,
+      rentStart: checkout.rentStart,
+      rentEnd: checkout.rentEnd,
     };
 
     try {
       const response = await createOrder(orderData);
       if (response) {
         setShowSuccessToast(true);
+        localStorage.removeItem("checkout");
         setTimeout(() => {
           navigate("/orders");
         }, 1000);
@@ -121,7 +141,20 @@ const Rent = () => {
     }
   }, [location.search]);
 
+  const handlePayPalSuccess = async (details) => {
+    console.log("Payment completed successfully:", details);
+    handlePlaceOrder(); // Call order creation after successful payment
+  };
+
   useEffect(() => {
+    const storedCheckoutData = JSON.parse(localStorage.getItem("checkout")) || {};
+    setSelectedProvinceId(storedCheckoutData.selectedProvinceId || null);
+    setSelectedDistrictId(storedCheckoutData.selectedDistrictId || null);
+    setSelectedWardId(storedCheckoutData.selectedWardId || null);
+    setAddress(storedCheckoutData.address || "");
+    setPhone(storedCheckoutData.phone || "");
+    setPayment(storedCheckoutData.payment || "PAY");
+
     fetchProduct();
     fetchProvinces();
   }, [id]);
@@ -136,6 +169,58 @@ const Rent = () => {
       }
     }
   }, [product.price, rentStart, rentEnd, quantity]);
+
+  const handleChange = (field, value) => {
+    // Update local state
+    if (field === "selectedProvinceId") {
+      setSelectedProvinceId(value);
+      fetchDistricts(value);
+    } else if (field === "selectedDistrictId") {
+      setSelectedDistrictId(value);
+      fetchWards(value);
+    } else if (field === "selectedWardId") {
+      setSelectedWardId(value);
+    } else if (field === "address") {
+      setAddress(value);
+    } else if (field === "phone") {
+      setPhone(value);
+    } else if (field === "payment") {
+      setPayment(value);
+    } else if (field === "rentStart") {
+      setRentStart(value);
+    } else if (field === "rentEnd") {
+      setRentEnd(value);
+    }
+  
+    // Update localStorage directly
+    const updatedData = {
+      selectedProvinceId,
+      selectedDistrictId,
+      selectedWardId,
+      address,
+      phone,
+      payment,
+      rentStart,
+      rentEnd,
+      [field]: value, // Override the specific field being changed
+    };
+    localStorage.setItem("checkout", JSON.stringify(updatedData));
+  };
+  
+  // Sync localStorage on any relevant field change
+  useEffect(() => {
+    const checkoutData = {
+      selectedProvinceId,
+      selectedDistrictId,
+      selectedWardId,
+      address,
+      phone,
+      payment,
+      rentStart,
+      rentEnd,
+    };
+    localStorage.setItem("checkout", JSON.stringify(checkoutData));
+  }, [selectedProvinceId, selectedDistrictId, selectedWardId, address, phone, payment, rentStart, rentEnd]);
 
   return (
     <div className="max-w-7xl mx-auto flex gap-5 py-5">
@@ -166,10 +251,7 @@ const Rent = () => {
               id="province"
               className="w-full border rounded p-2"
               value={selectedProvinceId || ""}
-              onChange={(e) => {
-                setSelectedProvinceId(e.target.value);
-                fetchDistricts(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedProvinceId", e.target.value)}
             >
               <option value="">Select a province</option>
               {provinces.map((province) => (
@@ -188,10 +270,7 @@ const Rent = () => {
               id="district"
               className="w-full border rounded p-2"
               value={selectedDistrictId || ""}
-              onChange={(e) => {
-                setSelectedDistrictId(e.target.value);
-                fetchWards(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedDistrictId", e.target.value)}
               disabled={!selectedProvinceId}
             >
               <option value="">Select a district</option>
@@ -211,7 +290,7 @@ const Rent = () => {
               id="ward"
               className="w-full border rounded p-2"
               value={selectedWardId || ""}
-              onChange={(e) => setSelectedWardId(e.target.value)}
+              onChange={(e) => handleChange("selectedWardId", e.target.value)}
               disabled={!selectedDistrictId}
             >
               <option value="">Select a ward</option>
@@ -231,7 +310,7 @@ const Rent = () => {
                 id="address"
                 className="w-full border rounded p-2"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => handleChange("address", e.target.value)}
               />
             </div>
             <div className="w-full">
@@ -242,7 +321,7 @@ const Rent = () => {
                 id="phone"
                 className="w-full border rounded p-2"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => handleChange("phone", e.target.value)}
               />
             </div>
           </div>
@@ -270,7 +349,7 @@ const Rent = () => {
                 className="w-full border rounded p-2"
                 value={rentEnd}
                 min={format(addDays(new Date(rentStart), 1), "yyyy-MM-dd")}
-                onChange={(e) => setRentEnd(e.target.value)}
+                onChange={(e) => handleChange("rentEnd", e.target.value)}
               />
             </div>
           </div>
@@ -281,9 +360,34 @@ const Rent = () => {
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
             </RadioGroup>
           </div>
-          <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
-            Place Order
-          </Button>
+          {payment === "PAY" && (
+            <PayPalScriptProvider options={{ "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8" }}>
+              <PayPalButtons
+                style={{ layout: "vertical" }}
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [{
+                      amount: {
+                        value: totalPrice.toFixed(2),
+                      },
+                    }],
+                  });
+                }}
+                onApprove={(data, actions) => {
+                  return actions.order.capture().then(handlePayPalSuccess);
+                }}
+                onError={(error) => {
+                  console.error("PayPal payment error:", error);
+                }}
+              />
+            </PayPalScriptProvider>
+          )}
+          
+          {payment === "CASH" && (
+            <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
+              Place Order
+            </Button>
+          )}
         </div>
       </div>
 

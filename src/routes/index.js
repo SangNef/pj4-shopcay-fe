@@ -16,6 +16,7 @@ import Cart from "../pages/home/cart";
 import CheckoutProduct from "../pages/home/checkoutProduct";
 import UserOrder from "../pages/home/orderDetail";
 import Profile from "../pages/home/profile";
+import Customer from "../pages/customer";
 
 const routes = [
   {
@@ -96,6 +97,11 @@ const routes = [
     Component: OrderDetail,
     Layout: AdminLayout,
   },
+  {
+    path: "/admin/customers",
+    Component: Customer,
+    Layout: AdminLayout,
+  }
 ];
 
 export default routes;

@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { getProduct } from "../../api/product";
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
 import { Button, FormControlLabel, Radio, RadioGroup, Snackbar } from "@mui/material";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const CheckoutProduct = () => {
   const { id } = useParams();
@@ -79,14 +80,16 @@ const CheckoutProduct = () => {
       },
     ];
 
+    const checkout = JSON.parse(localStorage.getItem("checkout")) || {};
+
     const orderData = {
       user: { id: user.id },
-      ward: { id: selectedWardId },
+      ward: { id: checkout.selectedWardId },
       type: "BUY",
       price: product.price * quantity,
       payment: payment,
-      phone: phone,
-      address: address,
+      address: checkout.address,
+      phone: checkout.phone,
       orderDetails: orderDetail,
     };
 
@@ -94,6 +97,7 @@ const CheckoutProduct = () => {
       const response = await createOrder(orderData);
       if (response) {
         setShowSuccessToast(true);
+        localStorage.removeItem("checkout");
         setTimeout(() => {
           navigate("/orders");
         }, 1000);
@@ -107,9 +111,67 @@ const CheckoutProduct = () => {
   };
 
   useEffect(() => {
+
+    const storedCheckoutData = JSON.parse(localStorage.getItem("checkout")) || {};
+    setSelectedProvinceId(storedCheckoutData.selectedProvinceId || null);
+    setSelectedDistrictId(storedCheckoutData.selectedDistrictId || null);
+    setSelectedWardId(storedCheckoutData.selectedWardId || null);
+    setAddress(storedCheckoutData.address || "");
+    setPhone(storedCheckoutData.phone || "");
+    setPayment(storedCheckoutData.payment || "PAY");
+
     fetchProduct();
     fetchProvinces();
   }, [id]);
+
+  const totalPrice = product.price * quantity;
+
+  const handlePayPalSuccess = async (details) => {
+    console.log("Payment completed successfully:", details);
+    handlePlaceOrder(); // Call order creation after successful payment
+  };
+
+  const handleChange = (field, value) => {
+    const updatedData = {
+      selectedProvinceId,
+      selectedDistrictId,
+      selectedWardId,
+      address,
+      phone,
+      payment,
+      [field]: value,
+    };
+    localStorage.setItem("checkout", JSON.stringify(updatedData));
+
+    // Update local state
+    if (field === "selectedProvinceId") {
+      setSelectedProvinceId(value);
+      fetchDistricts(value);
+    } else if (field === "selectedDistrictId") {
+      setSelectedDistrictId(value);
+      fetchWards(value);
+    } else if (field === "selectedWardId") {
+      setSelectedWardId(value);
+    } else if (field === "address") {
+      setAddress(value);
+    } else if (field === "phone") {
+      setPhone(value);
+    } else if (field === "payment") {
+      setPayment(value);
+    }
+  };
+
+  useEffect(() => {
+    const checkoutData = {
+      selectedProvinceId,
+      selectedDistrictId,
+      selectedWardId,
+      address,
+      phone,
+      payment,
+    };
+    localStorage.setItem("checkout", JSON.stringify(checkoutData));
+  }, [selectedProvinceId, selectedDistrictId, selectedWardId, address, phone, payment]);
 
   return (
     <div className="max-w-7xl mx-auto flex gap-5 py-5">
@@ -140,10 +202,7 @@ const CheckoutProduct = () => {
               id="province"
               className="w-full border rounded p-2"
               value={selectedProvinceId || ""}
-              onChange={(e) => {
-                setSelectedProvinceId(e.target.value);
-                fetchDistricts(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedProvinceId", e.target.value)}
             >
               <option value="">Select a province</option>
               {provinces.map((province) => (
@@ -162,10 +221,7 @@ const CheckoutProduct = () => {
               id="district"
               className="w-full border rounded p-2"
               value={selectedDistrictId || ""}
-              onChange={(e) => {
-                setSelectedDistrictId(e.target.value);
-                fetchWards(e.target.value);
-              }}
+              onChange={(e) => handleChange("selectedDistrictId", e.target.value)}
               disabled={!selectedProvinceId}
             >
               <option value="">Select a district</option>
@@ -185,7 +241,7 @@ const CheckoutProduct = () => {
               id="ward"
               className="w-full border rounded p-2"
               value={selectedWardId || ""}
-              onChange={(e) => setSelectedWardId(e.target.value)}
+              onChange={(e) => handleChange("selectedWardId", e.target.value)}
               disabled={!selectedDistrictId}
             >
               <option value="">Select a ward</option>
@@ -205,7 +261,7 @@ const CheckoutProduct = () => {
                 id="address"
                 className="w-full border rounded p-2"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => handleChange("address", e.target.value)}
               />
             </div>
             <div className="w-full">
@@ -216,20 +272,49 @@ const CheckoutProduct = () => {
                 id="phone"
                 className="w-full border rounded p-2"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => handleChange("phone", e.target.value)}
               />
             </div>
           </div>
           <div style={{ marginTop: "30px" }}>
             <h3 className="text-2xl font-semibold">Payment Method</h3>
-            <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
+            <RadioGroup
+              value={payment}
+              onChange={(e) => setPayment(e.target.value)}
+            >
               <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
             </RadioGroup>
           </div>
-          <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
-            Place Order
-          </Button>
+
+          {payment === "PAY" && (
+            <PayPalScriptProvider options={{ "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8" }}>
+              <PayPalButtons
+                style={{ layout: "vertical" }}
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [{
+                      amount: {
+                        value: totalPrice.toFixed(2),
+                      },
+                    }],
+                  });
+                }}
+                onApprove={(data, actions) => {
+                  return actions.order.capture().then(handlePayPalSuccess);
+                }}
+                onError={(error) => {
+                  console.error("PayPal payment error:", error);
+                }}
+              />
+            </PayPalScriptProvider>
+          )}
+          
+          {payment === "CASH" && (
+            <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
+              Place Order
+            </Button>
+          )}
         </div>
       </div>
 

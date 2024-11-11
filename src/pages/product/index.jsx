@@ -13,6 +13,7 @@ import {
   Pagination,
   IconButton,
   Box,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -30,13 +31,13 @@ const Product = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const fetchProducts = async () => {
-    const data = await getProducts();
+    const data = await getProducts(filter);  // Pass filter to API
     setProducts(data);
   };
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [filter, page]); // Add `filter` and `page` as dependencies
 
   const handleChangePage = (event, value) => {
     setPage(value);
@@ -57,8 +58,7 @@ const Product = () => {
     }
   };
 
-  const filteredData = products.filter((product) => product.name.toLowerCase().includes(filter.toLowerCase()));
-  const paginatedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const filteredData = products.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   const handleEditClick = (product) => {
     setSelectedProduct(product);
@@ -86,20 +86,30 @@ const Product = () => {
           Products List
         </Typography>
 
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "#1976d2",
-            borderRadius: "8px",
-            padding: "8px 16px",
-            "&:hover": {
-              backgroundColor: "#1565c0",
-            },
-          }}
-          onClick={handleDialogOpen}
-        >
-          Create Product
-        </Button>
+        <Box sx={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <TextField
+            label="Search by Name"
+            variant="outlined"
+            size="small"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            sx={{ width: "200px" }}
+          />
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#1976d2",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              "&:hover": {
+                backgroundColor: "#1565c0",
+              },
+            }}
+            onClick={handleDialogOpen}
+          >
+            Create Product
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -125,7 +135,7 @@ const Product = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedData.map((product) => (
+            {filteredData.map((product) => (
               <TableRow key={product.id} sx={{ "&:hover": { backgroundColor: "#f1f3f5" } }}>
                 <TableCell>{product.id}</TableCell>
                 <TableCell>{product.name}</TableCell>
@@ -167,7 +177,7 @@ const Product = () => {
       </TableContainer>
 
       <Pagination
-        count={Math.ceil(filteredData.length / rowsPerPage)}
+        count={Math.ceil(products.length / rowsPerPage)}
         page={page}
         onChange={handleChangePage}
         color="primary"
