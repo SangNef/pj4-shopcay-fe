@@ -24,7 +24,7 @@ const Checkout = () => {
 
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
-  const [payment, setPayment] = useState("PAY");
+  const [payment, setPayment] = useState("CASH");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const fetchProducts = async () => {
@@ -271,8 +271,8 @@ const Checkout = () => {
               value={payment}
               onChange={(e) => setPayment(e.target.value)}
             >
-              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
+              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
             </RadioGroup>
           </div>
 
