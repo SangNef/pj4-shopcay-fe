@@ -159,7 +159,7 @@ const UserOrder = () => {
               </div>
             ) : (
               // Only show textarea for statuses 4 (Completed) and 6 (Canceled)
-              (order.status === 4 || order.status === 6) && (
+              (order.status === 4 || order.status === 11) && (
                 <div className="mt-4">
                   <h4 className="font-semibold text-gray-800">Leave a Comment:</h4>
                   <textarea

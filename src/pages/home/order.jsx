@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";  // Import useNavigate
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { getOrdersByUser, updateStatus, cancelOrder } from "../../api/order";
 
 const Order = () => {
@@ -9,7 +9,7 @@ const Order = () => {
   const [page, setPage] = useState(1); // Default page is 1
   const [totalPages, setTotalPages] = useState(1); // Total number of pages
   const user = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();  // Initialize useNavigate
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const fetchOrders = async (page = 1) => {
     try {
@@ -74,24 +74,24 @@ const Order = () => {
   };
 
   const statusColors = {
-    0: '#ffc107',
-    1: '#17a2b8',
-    2: '#007bff',
-    3: '#28a745',
-    4: '#fd7e14',
-    5: '#dc3545',
-    6: '#ffc107',
-    7: '#17a2b8',
-    8: '#007bff',
-    9: '#28a745',
-    10: '#ffc107',
-    11: '#fd7e14',
+    0: "#ffc107",
+    1: "#17a2b8",
+    2: "#007bff",
+    3: "#28a745",
+    4: "#fd7e14",
+    5: "#dc3545",
+    6: "#ffc107",
+    7: "#17a2b8",
+    8: "#007bff",
+    9: "#28a745",
+    10: "#ffc107",
+    11: "#fd7e14",
   };
 
   // Type and color definitions
   const orderTypeColors = {
-    'BUY': '#007bff',   // Blue for BUY
-    'RENT': '#fd7e14',  // Orange for RENT
+    BUY: "#007bff", // Blue for BUY
+    RENT: "#fd7e14", // Orange for RENT
   };
 
   return (
@@ -103,6 +103,7 @@ const Order = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">ID</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Product</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Type</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Total Price</th>
               <th className="px-6 py-3 text-left font-semibold text-gray-700">Status</th>
@@ -114,13 +115,17 @@ const Order = () => {
               <tr
                 key={order.id}
                 className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/order/${order.id}`)}  // Navigate on row click
+                onClick={() => navigate(`/order/${order.id}`)} // Navigate on row click
               >
                 <td className="px-6 py-4">{order.id}</td>
+                <td className="px-6 py-4 flex items-center gap-4">
+                  <img src={order.orderDetails[0].product.images[0]} alt="" className="w-16 h-16 object-cover" />
+                  <p>{order.orderDetails[0].product.name}</p>
+                </td>
                 <td className="px-6 py-4">
                   <span
                     style={{
-                      color: orderTypeColors[order.type] || '#000',
+                      color: orderTypeColors[order.type] || "#000",
                       fontWeight: "bold",
                     }}
                   >
@@ -138,11 +143,11 @@ const Order = () => {
                     {statusText[order.status]}
                   </span>
                 </td>
-                <td className="px-6 py-4 flex space-x-2">
+                <td className="px-6 py-4 h-full flex items-center justify-center gap-4 mb-8">
                   {order.status === 2 && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();  // Prevent navigating when clicking the button
+                        e.stopPropagation(); // Prevent navigating when clicking the button
                         handleUpdateStatus(order.id);
                       }}
                       className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
@@ -153,7 +158,7 @@ const Order = () => {
                   {(order.status === 0 || order.status === 6) && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();  // Prevent navigating when clicking the button
+                        e.stopPropagation(); // Prevent navigating when clicking the button
                         handleCancelOrder(order.id);
                       }}
                       className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
@@ -172,7 +177,7 @@ const Order = () => {
       <div className="mt-6 flex justify-center">
         <button
           onClick={() => setPage(page - 1)}
-          className={`px-4 py-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded-md`}
+          className={`px-4 py-2 ${page === 1 ? "bg-gray-300" : "bg-blue-500 text-white"} rounded-md`}
           disabled={page === 1}
         >
           Previous
@@ -180,7 +185,7 @@ const Order = () => {
         <span className="mx-4 my-auto">{page}</span>
         <button
           onClick={() => setPage(page + 1)}
-          className={`px-4 py-2 ${page === totalPages ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded-md`}
+          className={`px-4 py-2 ${page === totalPages ? "bg-gray-300" : "bg-blue-500 text-white"} rounded-md`}
           disabled={page === totalPages}
         >
           Next
@@ -191,7 +196,9 @@ const Order = () => {
       {showSnackbar && (
         <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-full max-w-xs p-4 bg-green-500 text-white rounded-md shadow-lg">
           {snackbarMessage}
-          <button onClick={handleSnackbarClose} className="absolute top-0 right-0 p-2 text-white">X</button>
+          <button onClick={handleSnackbarClose} className="absolute top-0 right-0 p-2 text-white">
+            X
+          </button>
         </div>
       )}
     </div>

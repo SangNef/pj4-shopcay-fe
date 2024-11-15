@@ -11,7 +11,7 @@ const UserLayout = ({ children}) => {
   return (
     <div>
         <Header />
-        {children}
+        <main className='min-h-screen'>{children}</main>
         <Footer />
     </div>
   )
