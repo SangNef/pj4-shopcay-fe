@@ -1,11 +1,18 @@
 import React from 'react'
 import Header from '../component/userHeader'
+import { Navigate } from 'react-router-dom';
+import Footer from '../component/footer';
 
 const UserLayout = ({ children}) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    return <Navigate to="/" />;
+  }
   return (
     <div>
         <Header />
         {children}
+        <Footer />
     </div>
   )
 }

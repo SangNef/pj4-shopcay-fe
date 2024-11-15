@@ -28,7 +28,7 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigation("/");
+    navigation("/login");
   };
 
   // Show the submenu immediately on mouse enter

@@ -1,36 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { getOrders } from "../../api/order";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Pagination,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1); // Track the total number of pages
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState(""); // State for selected status filter
+  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const navigate = useNavigate();
 
-  const fetchOrders = async (page, status) => {
+  const fetchOrders = async (page, status, type) => {
     try {
-      const data = await getOrders(page, 10, status); // Send status filter as a parameter
-      setOrders(data.content); // content contains the orders
-      setTotalPages(data.totalPages); // totalPages will help in pagination
+      const data = await getOrders(page, 10, status, type);
+      setOrders(data.content);
+      setTotalPages(data.totalPages);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -39,25 +25,25 @@ const Order = () => {
   };
 
   useEffect(() => {
-    fetchOrders(page - 1, statusFilter); // page is 1-based, so subtract 1 for the backend
-  }, [page, statusFilter]);
+    fetchOrders(page - 1, statusFilter, typeFilter);
+  }, [page, statusFilter, typeFilter]);
 
   const getStatusDetails = (status) => {
     switch (status) {
-      case 0:
-        return { label: "Pending", color: "#ffc107" };
-      case 1:
-        return { label: "Confirmed", color: "#17a2b8" };
-      case 2:
-        return { label: "Shipping", color: "#007bff" };
-      case 3:
-        return { label: "Delivered", color: "#28a745" };
-      case 4:
-        return { label: "Completed", color: "#fd7e14" };
-      case 5:
-        return { label: "Cancelled", color: "#dc3545" };
-      default:
-        return { label: "Unknown", color: "#6c757d" };
+      case 0: return { label: "Pending", color: "#ffc107" };
+      case 1: return { label: "Confirmed", color: "#17a2b8" };
+      case 2: return { label: "Shipping", color: "#007bff" };
+      case 3: return { label: "Delivered", color: "#28a745" };
+      case 4: return { label: "Completed", color: "#fd7e14" };
+      case 5: return { label: "Cancelled", color: "#dc3545" };
+      case 6: return { label: "Pending", color: "#ffc107" };
+      case 7: return { label: "Confirmed", color: "#17a2b8" };
+      case 8: return { label: "Shipping", color: "#007bff" };
+      case 9: return { label: "Delivered", color: "#28a745" };
+      case 10: return { label: "Returning", color: "#ffc107" };
+      case 11: return { label: "Completed", color: "#fd7e14" };
+      case 12: return { label: "Cancelled", color: "#dc3545" };
+      default: return { label: "Unknown", color: "#6c757d" };
     }
   };
 
@@ -65,85 +51,131 @@ const Order = () => {
     navigate(`/admin/order/${orderId}`);
   };
 
+  // Define status options for "BUY" and "RENT" types
+  const buyStatusOptions = [
+    { value: "", label: "All" },
+    { value: "0", label: "Pending" },
+    { value: "1", label: "Confirmed" },
+    { value: "2", label: "Shipping" },
+    { value: "3", label: "Delivered" },
+    { value: "4", label: "Completed" },
+    { value: "5", label: "Cancelled" }
+  ];
+
+  const rentStatusOptions = [
+    { value: "", label: "All" },
+    { value: "6", label: "Pending" },
+    { value: "7", label: "Confirmed" },
+    { value: "8", label: "Shipping" },
+    { value: "9", label: "Delivered" },
+    { value: "10", label: "Returning" },
+    { value: "11", label: "Completed" },
+    { value: "12", label: "Cancelled" }
+  ];
+
+  // Select the correct status options based on the type
+  const statusOptions = typeFilter === "BUY" ? buyStatusOptions : rentStatusOptions;
+
   return (
-    <div style={{ padding: "20px" }}>
-      <Typography variant="h4" gutterBottom>
-        Order List
-      </Typography>
+    <div className="p-8">
+      <h2 className="text-3xl font-bold mb-4">Order List</h2>
 
       {/* Status Filter Select */}
-      <FormControl style={{ marginBottom: "20px" }} className="w-40">
-        <InputLabel>Status</InputLabel>
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          label="Status"
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="0">Pending</MenuItem>
-          <MenuItem value="1">Confirmed</MenuItem>
-          <MenuItem value="2">Shipping</MenuItem>
-          <MenuItem value="3">Delivered</MenuItem>
-          <MenuItem value="4">Completed</MenuItem>
-          <MenuItem value="5">Cancelled</MenuItem>
-        </Select>
-      </FormControl>
-
-      <TableContainer component={Paper} elevation={3}>
-        <Table sx={{ minWidth: 650 }} aria-label="order table">
-          <TableHead>
-            <TableRow>
-              <TableCell><strong>Order ID</strong></TableCell>
-              <TableCell align="left"><strong>User</strong></TableCell>
-              <TableCell align="left"><strong>Type</strong></TableCell>
-              <TableCell align="left"><strong>Price</strong></TableCell>
-              <TableCell align="left"><strong>Payment Method</strong></TableCell>
-              <TableCell align="left"><strong>Phone</strong></TableCell>
-              <TableCell align="left"><strong>Status</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order) => (
-              <React.Fragment key={order.id}>
-                <TableRow
-                  onClick={() => navigateToOrderDetail(order.id)}
-                  style={{ cursor: "pointer", transition: "background-color 0.3s" }}
-                  hover
-                >
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell align="left">{order.user.fullname}</TableCell>
-                  <TableCell align="left">{order.type}</TableCell>
-                  <TableCell align="left">${order.price}</TableCell>
-                  <TableCell align="left">{order.payment}</TableCell>
-                  <TableCell align="left">{order.phone}</TableCell>
-                  <TableCell align="left">
-                    <span
-                      style={{
-                        backgroundColor: getStatusDetails(order.status).color,
-                        color: "white",
-                        padding: "5px 10px",
-                        borderRadius: "5px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {getStatusDetails(order.status).label}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              </React.Fragment>
+      <div className="flex space-x-4 mb-4">
+        <div className="w-1/4">
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
+          <select
+            id="status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </select>
+        </div>
+
+        {/* Type Filter Select */}
+        <div className="w-1/4">
+          <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
+          <select
+            id="type"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            <option value="BUY">BUY</option>
+            <option value="RENT">RENT</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Order ID</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">User</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Type</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Price</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Payment Method</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Phone</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr
+                key={order.id}
+                onClick={() => navigateToOrderDetail(order.id)}
+                className="cursor-pointer hover:bg-gray-50 transition-all"
+              >
+                <td className="px-4 py-3">{order.id}</td>
+                <td className="px-4 py-3">{order.user.fullname}</td>
+                <td className="px-4 py-3">{order.type}</td>
+                <td className="px-4 py-3">${order.price}</td>
+                <td className="px-4 py-3">{order.payment}</td>
+                <td className="px-4 py-3">{order.phone}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className="px-3 py-1 rounded-full text-white font-semibold"
+                    style={{
+                      backgroundColor: getStatusDetails(order.status).color,
+                    }}
+                  >
+                    {getStatusDetails(order.status).label}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
-      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(event, value) => setPage(value)} // Update page state on page change
-          color="primary"
-        />
+      <div className="mt-6 flex justify-center">
+        <nav className="flex items-center space-x-2">
+          <button
+            onClick={() => setPage(page - 1)}
+            className={`px-4 py-2 border rounded-md ${page === 1 ? 'text-gray-400' : 'text-blue-600'}`}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+          <span className="text-sm text-gray-700">{page} / {totalPages}</span>
+          <button
+            onClick={() => setPage(page + 1)}
+            className={`px-4 py-2 border rounded-md ${page === totalPages ? 'text-gray-400' : 'text-blue-600'}`}
+            disabled={page === totalPages}
+          >
+            Next
+          </button>
+        </nav>
       </div>
     </div>
   );

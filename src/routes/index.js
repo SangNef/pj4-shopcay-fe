@@ -17,6 +17,8 @@ import CheckoutProduct from "../pages/home/checkoutProduct";
 import UserOrder from "../pages/home/orderDetail";
 import Profile from "../pages/home/profile";
 import Customer from "../pages/customer";
+import About from "../pages/home/about";
+import Contact from "../pages/home/contact";
 
 const routes = [
   {
@@ -30,6 +32,15 @@ const routes = [
   {
     path: "/",
     Component: Home,
+    Layout: UserLayout,
+  },{
+    path: "/about",
+    Component: About,
+    Layout: UserLayout,
+  },
+  {
+    path: "/contact",
+    Component: Contact,
     Layout: UserLayout,
   },
   {

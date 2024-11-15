@@ -7,28 +7,38 @@ import defaultImg from "../../assets/9.png";
 const Category = () => {
   const { category } = useParams(); // Get the category from the URL
   const [products, setProducts] = useState([]);
-
+  const [maxPrice, setMaxPrice] = useState(500); // Initialize max price state
+  const [sortOrder, setSortOrder] = useState("asc"); // Initialize sort order
   const navigate = useNavigate();
 
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
   useEffect(() => {
-    // Fetch products based on the category
     const fetchProducts = async () => {
       let data = [];
       switch (category) {
         case "fruit-trees":
-          data = await getFruitTrees();
+          data = await getFruitTrees(maxPrice, sortOrder);
           break;
         case "flowering-trees":
-          data = await getFlowers();
+          data = await getFlowers(maxPrice, sortOrder);
           break;
         case "shade-trees":
-          data = await getShadeTrees();
+          data = await getShadeTrees(maxPrice, sortOrder);
           break;
         case "ornamental-trees":
-          data = await getOrnamentalTrees();
+          data = await getOrnamentalTrees(maxPrice, sortOrder);
           break;
         case "evergreen-trees":
-          data = await getEvergreenTrees();
+          data = await getEvergreenTrees(maxPrice, sortOrder);
           break;
         default:
           console.log("Invalid category");
@@ -38,10 +48,9 @@ const Category = () => {
     };
 
     fetchProducts();
-  }, [category]); // Re-run the effect whenever the category changes
+  }, [category, maxPrice, sortOrder]); // Re-run the effect when category, maxPrice, or sortOrder changes
 
   const handleBuyNow = (productId) => {
-    // Implement your buy now logic, e.g., navigate to checkout
     navigate(`/checkout/${productId}/?qty=1`);
   };
 
@@ -59,179 +68,92 @@ const Category = () => {
     console.log(`Product ${productId} added to cart with quantity 1`);
   };
 
-  return (
-    <div style={{ position: "relative", maxWidth: "100%", overflow: "hidden" }}>
-      <img src={ov} alt="" style={{ height: "300px", width: "100%", objectFit: "cover" }} />
+  const handleFilterChange = (e) => {
+    setMaxPrice(e.target.value);
+  };
 
-      {/* Title above the overlay */}
-      <div
-        style={{
-          position: "absolute",
-          top: "120px", // Adjust the position as needed
-          left: "50%",
-          transform: "translateX(-50%)",
-          color: "#fff",
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.7)",
-          textAlign: "center",
-          fontSize: "2.5rem",
-          zIndex: 2, // Ensure title is above the overlay
-        }}
-      >
+  const handleSortChange = (e) => {
+    setSortOrder(e.target.value);
+  };
+
+  return (
+    <div className="relative max-w-full overflow-hidden">
+      <img src={ov} alt="" className="h-[300px] w-full object-cover" />
+
+      <div className="absolute top-[120px] left-1/2 transform -translate-x-1/2 text-white text-center text-3xl z-2 drop-shadow-xl">
         SHOP
       </div>
 
-      {/* Overlay */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "300px",
-          backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent overlay
-          zIndex: 1, // Overlay below the title
-        }}
-      />
+      <div className="absolute top-0 left-0 w-full h-[300px] bg-black bg-opacity-50 z-1" />
 
-      <div style={{ maxWidth: "1120px", margin: "0 auto", display: "flex", gap: "20px" }}>
+      <div className="max-w-[1120px] mx-auto flex gap-5 mt-10">
         {/* Filter Column */}
-        <div style={{ width: "25%", padding: "20px", backgroundColor: "#f8f8f8", borderRadius: "8px" }}>
-          <h3 style={{ marginBottom: "15px", color: "#333" }}>Filters</h3>
+        <div className="w-1/4 p-5 bg-gray-100 rounded-lg">
+          <h3 className="mb-4 text-gray-800">Filters</h3>
 
           {/* Rank Price Filter */}
-          <div style={{ marginBottom: "20px" }}>
-            <h4 style={{ margin: "10px 0", color: "#70C745" }}>Rank Price</h4>
-            <input type="range" min="0" max="100" step="1" style={{ width: "100%" }} />
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div className="mb-5">
+            <h4 className="mb-2 text-green-500">Rank Price</h4>
+            <input
+              type="range"
+              min="0"
+              max="5000"
+              step="1"
+              value={maxPrice}
+              onChange={handleFilterChange}
+              className="w-full"
+            />
+            <div className="flex justify-between">
               <span>$0</span>
-              <span>$100</span>
+              <span>${maxPrice}</span>
             </div>
           </div>
 
-          {/* Category Checkbox Filter */}
-          <div style={{ marginBottom: "20px" }}>
-            <h4 style={{ margin: "10px 0", color: "#70C745" }}>Category</h4>
-            <label>
-              <input type="checkbox" />
-              Fruit Trees
-            </label>
-            <br />
-            <label>
-              <input type="checkbox" />
-              Flowering Trees
-            </label>
-            <br />
-            <label>
-              <input type="checkbox" />
-              Shade Trees
-            </label>
-            <br />
-            <label>
-              <input type="checkbox" />
-              Ornamental Trees
-            </label>
-            <br />
-            <label>
-              <input type="checkbox" />
-              Evergreen Trees
-            </label>
-          </div>
-
-          {/* Sort By Filter */}
+          {/* Sort Order */}
           <div>
-            <h4 style={{ margin: "10px 0", color: "#70C745" }}>Sort By</h4>
-            <select style={{ width: "100%", padding: "8px" }}>
-              <option value="default">Select</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="newest">Newest Arrivals</option>
+            <h4 className="mb-2 text-green-500">Sort By Price</h4>
+            <select value={sortOrder} onChange={handleSortChange} className="w-full py-2 px-3 border rounded-md">
+              <option value="asc">Price: Low to High</option>
+              <option value="desc">Price: High to Low</option>
             </select>
           </div>
         </div>
 
         {/* Product List */}
-        <div style={{ width: "75%" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "20px" }}>
+        <div className="w-3/4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {products.length > 0 ? (
               products.map((product) => (
                 <div
                   key={product.id}
-                  style={{
-                    position: "relative",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "20px",
-                    textAlign: "center",
-                    backgroundColor: "#fff",
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                  }}
+                  className="relative border border-gray-300 rounded-lg p-5 text-center bg-white shadow-md"
                 >
                   {product.canRent && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "#FFA500",
-                        color: "#fff",
-                        padding: "5px 10px",
-                        borderRadius: "5px",
-                        fontSize: "0.9rem",
-                        fontWeight: "bold",
-                      }}
-                    >
+                    <span className="absolute top-2 left-2 bg-orange-500 text-white text-sm font-bold py-1 px-3 rounded">
                       Rental
                     </span>
                   )}
 
-                  {/* Wrap only product details in Link */}
-                  <Link to={`/product/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <Link to={`/product/${product.id}`} className="text-inherit no-underline">
                     <img
                       src={product.images[0] || defaultImg}
                       alt={product.name}
-                      style={{ width: "200px", height: "200px", objectFit: "cover", marginBottom: "15px" }}
+                      className="w-48 h-48 object-cover mb-4 mx-auto"
                     />
-                    <h4 style={{ color: "#333" }}>{product.name}</h4>
-                    <p style={{ fontWeight: "bold", color: "#70C745", marginTop: "6px" }}>${product.price}</p>
+                    <h4 className="text-gray-800">{product.name}</h4>
+                    <p className="font-bold text-green-500 mt-2">${product.price}</p>
                   </Link>
 
-                  {/* Buttons for "Buy Now" and "Add to Cart" */}
-                  <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
+                  <div className="flex justify-center gap-4 mt-4">
                     <button
-                      style={{
-                        padding: "8px 15px",
-                        backgroundColor: "#70C745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        transition: "background-color 0.3s",
-                      }}
+                      className="py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition whitespace-nowrap"
                       onClick={() => handleBuyNow(product.id)}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5da035")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#70C745")}
                     >
                       Buy Now
                     </button>
 
                     <button
-                      style={{
-                        padding: "8px 15px",
-                        backgroundColor: "#fff",
-                        color: "#70C745",
-                        border: "2px solid #70C745",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        transition: "background-color 0.3s, color 0.3s",
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = "#70C745";
-                        e.currentTarget.style.color = "#fff";
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = "#fff";
-                        e.currentTarget.style.color = "#70C745";
-                      }}
+                      className="py-2 px-4 bg-white text-green-500 border-2 border-green-500 rounded-lg hover:bg-green-100 transition whitespace-nowrap"
                       onClick={() => handleAddToCart(product.id)}
                     >
                       Add to Cart
@@ -240,7 +162,7 @@ const Category = () => {
                 </div>
               ))
             ) : (
-              <p style={{ color: "#333" }}>No products available</p>
+              <p className="text-gray-800">No products available</p>
             )}
           </div>
         </div>

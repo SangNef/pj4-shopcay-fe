@@ -1,17 +1,4 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Snackbar,
-  Alert,
-  Pagination
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";  // Import useNavigate
 import { getOrdersByUser, updateStatus, cancelOrder } from "../../api/order";
 
@@ -77,6 +64,13 @@ const Order = () => {
     3: "Delivered",
     4: "Completed",
     5: "Canceled",
+    6: "Pending",
+    7: "Confirmed",
+    8: "Shipping",
+    9: "Delivered",
+    10: "Returning",
+    11: "Completed",
+    12: "Canceled",
   };
 
   const statusColors = {
@@ -85,7 +79,13 @@ const Order = () => {
     2: '#007bff',
     3: '#28a745',
     4: '#fd7e14',
-    5: '#dc3545'
+    5: '#dc3545',
+    6: '#ffc107',
+    7: '#17a2b8',
+    8: '#007bff',
+    9: '#28a745',
+    10: '#ffc107',
+    11: '#fd7e14',
   };
 
   // Type and color definitions
@@ -95,30 +95,29 @@ const Order = () => {
   };
 
   return (
-    <Paper className="max-w-6xl mx-auto mt-6 p-4">
+    <div className="max-w-7xl mx-auto mt-6 p-4">
       <h2 className="text-center text-xl font-semibold mb-6 text-gray-800">Order List</h2>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><strong>ID</strong></TableCell>
-              <TableCell><strong>Type</strong></TableCell>
-              <TableCell><strong>Total Price</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
-              <TableCell><strong>Action</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">ID</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Type</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Total Price</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Status</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-700">Action</th>
+            </tr>
+          </thead>
+          <tbody>
             {orders.map((order) => (
-              <TableRow
+              <tr
                 key={order.id}
-                hover
+                className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => navigate(`/order/${order.id}`)}  // Navigate on row click
-                style={{ cursor: "pointer" }}  // Optional: Makes the row clickable
               >
-                <TableCell>{order.id}</TableCell>
-                <TableCell>
+                <td className="px-6 py-4">{order.id}</td>
+                <td className="px-6 py-4">
                   <span
                     style={{
                       color: orderTypeColors[order.type] || '#000',
@@ -127,9 +126,9 @@ const Order = () => {
                   >
                     {order.type}
                   </span>
-                </TableCell>
-                <TableCell>${order.price}</TableCell>
-                <TableCell>
+                </td>
+                <td className="px-6 py-4">${order.price}</td>
+                <td className="px-6 py-4">
                   <span
                     style={{
                       color: statusColors[order.status],
@@ -138,9 +137,9 @@ const Order = () => {
                   >
                     {statusText[order.status]}
                   </span>
-                </TableCell>
-                <TableCell>
-                  {order.status === 3 && (
+                </td>
+                <td className="px-6 py-4 flex space-x-2">
+                  {order.status === 2 && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();  // Prevent navigating when clicking the button
@@ -148,10 +147,10 @@ const Order = () => {
                       }}
                       className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
                     >
-                      Mark as Completed
+                      Mark as Delivered
                     </button>
                   )}
-                  {order.status === 0 && (
+                  {(order.status === 0 || order.status === 6) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();  // Prevent navigating when clicking the button
@@ -162,27 +161,40 @@ const Order = () => {
                       Cancel Order
                     </button>
                   )}
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
-      <Pagination
-        count={totalPages}
-        page={page}
-        onChange={(_, value) => setPage(value)}
-        className="mt-6 flex justify-center"
-      />
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={() => setPage(page - 1)}
+          className={`px-4 py-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded-md`}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span className="mx-4 my-auto">{page}</span>
+        <button
+          onClick={() => setPage(page + 1)}
+          className={`px-4 py-2 ${page === totalPages ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded-md`}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
+      </div>
 
       {/* Snackbar */}
-      <Snackbar open={showSnackbar} autoHideDuration={3000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
+      {showSnackbar && (
+        <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-full max-w-xs p-4 bg-green-500 text-white rounded-md shadow-lg">
           {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Paper>
+          <button onClick={handleSnackbarClose} className="absolute top-0 right-0 p-2 text-white">X</button>
+        </div>
+      )}
+    </div>
   );
 };
 

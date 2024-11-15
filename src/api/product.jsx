@@ -1,7 +1,9 @@
 import { get, post, put } from "./index";
 
-export const getProducts = async (name = "") => {
-  const response = await get(`/products/all?name=${name}`);
+export const getProducts = async (name = "", category = "", status = "") => {
+  const response = await get(
+    `/products/all?name=${name}&category=${category}&status=${status}`
+  );
   return response;
 };
 
@@ -29,22 +31,22 @@ export const randomProducts = async () => {
   return await get("/products/random");
 };
 
-export const getFruitTrees = async () => {
-  return await get("/products/category/fruit-tree");
+export const getFruitTrees = async (maxPrice, sortOrder) => {
+  return await get(`/products/category/fruit-tree?maxPrice=${maxPrice}&sortOrder=${sortOrder}`);
 }
 
-export const getFlowers = async () => {
-  return await get("/products/category/flowering-tree");
+export const getFlowers = async (maxPrice, sortOrder) => {
+  return await get(`/products/category/flowering-tree?maxPrice=${maxPrice}&sortOrder=${sortOrder}`);
 }
 
-export const getShadeTrees = async () => {
-  return await get("/products/category/shade-tree");
+export const getShadeTrees = async (maxPrice, sortOrder) => {
+  return await get(`/products/category/shade-tree?maxPrice=${maxPrice}&sortOrder=${sortOrder}`);
 }
 
-export const getOrnamentalTrees = async () => {
-  return await get("/products/category/ornamental-tree");
+export const getOrnamentalTrees = async (maxPrice, sortOrder) => {
+  return await get(`/products/category/ornamental-tree?maxPrice=${maxPrice}&sortOrder=${sortOrder}`);
 }
 
-export const getEvergreenTrees = async () => {
-  return await get("/products/category/evergreen-tree");
+export const getEvergreenTrees = async (maxPrice, sortOrder) => {
+  return await get(`/products/category/evergreen-tree?maxPrice=${maxPrice}&sortOrder=${sortOrder}`);
 }

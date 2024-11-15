@@ -1,19 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  IconButton,
-} from "@mui/material";
 import { updateProduct } from "../../api/product"; // Import API function
 import axios from "axios"; // Make sure to import axios
 import CloseIcon from '@mui/icons-material/Close';
@@ -88,128 +73,146 @@ const Edit = ({ open, onClose, product, onProductUpdated }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Edit Product</DialogTitle>
-      <DialogContent>
-        <TextField
-          margin="dense"
-          label="Name"
-          type="text"
-          fullWidth
-          name="name"
-          value={updatedProduct.name}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          label="Price"
-          type="number"
-          fullWidth
-          name="price"
-          value={updatedProduct.price}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          label="Description"
-          type="text"
-          fullWidth
-          multiline
-          rows={4}
-          name="description"
-          value={updatedProduct.description}
-          onChange={handleChange}
-        />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Category</InputLabel>
-          <Select
+    <div className={`fixed inset-0 z-50 bg-gray-900 bg-opacity-50 ${open ? 'block' : 'hidden'}`}>
+      <div className="bg-white rounded-lg shadow-lg w-full md:max-w-3xl max-h-[600px] overflow-y-auto mx-auto mt-32 p-6">
+        <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Name</label>
+          <input
+            type="text"
+            name="name"
+            value={updatedProduct.name}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Price</label>
+          <input
+            type="number"
+            name="price"
+            value={updatedProduct.price}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Description</label>
+          <textarea
+            name="description"
+            value={updatedProduct.description}
+            onChange={handleChange}
+            rows="4"
+            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Category</label>
+          <select
             name="category"
             value={updatedProduct.category}
             onChange={handleChange}
-            size="small"
-            MenuProps={{ PaperProps: { sx: { maxHeight: 200 } } }}
+            className="w-full p-2 border border-gray-300 rounded-md text-sm"
           >
-            <MenuItem value="Fruit Tree">Fruit Tree</MenuItem>
-            <MenuItem value="Flowering Tree">Flowering Tree</MenuItem>
-            <MenuItem value="Shade Tree">Shade Tree</MenuItem>
-            <MenuItem value="Ornamental Tree">Ornamental Tree</MenuItem>
-            <MenuItem value="Evergreen Tree">Evergreen Tree</MenuItem>
-          </Select>
-        </FormControl>
+            <option value="Fruit Tree">Fruit Tree</option>
+            <option value="Flowering Tree">Flowering Tree</option>
+            <option value="Shade Tree">Shade Tree</option>
+            <option value="Ornamental Tree">Ornamental Tree</option>
+            <option value="Evergreen Tree">Evergreen Tree</option>
+          </select>
+        </div>
 
-        <TextField
-          margin="dense"
-          label="Quantity"
-          type="number"
-          fullWidth
-          name="qty"
-          value={updatedProduct.qty}
-          onChange={handleChange}
-        />
-        
-        <FormControlLabel
-          control={
-            <Switch
-              checked={updatedProduct.canRent}
-              onChange={handleChange}
-              name="canRent"
-            />
-          }
-          label="Can Rent"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Quantity</label>
+          <input
+            type="number"
+            name="qty"
+            value={updatedProduct.qty}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          />
+        </div>
+
+        <div className="mb-4 flex items-center">
+          <input
+            type="checkbox"
+            checked={updatedProduct.canRent}
+            onChange={handleChange}
+            name="canRent"
+            className="mr-2"
+          />
+          <span className="text-sm">Can Rent</span>
+        </div>
 
         {updatedProduct.canRent && (
-          <TextField
-            margin="dense"
-            label="Rental Price"
-            type="number"
-            fullWidth
-            name="rentPrice"
-            value={updatedProduct.rentPrice || ""}
-            onChange={handleChange}
-          />
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Rental Price</label>
+            <input
+              type="number"
+              name="rentPrice"
+              value={updatedProduct.rentPrice || ""}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
         )}
 
-        {/* Display uploaded images */}
-        <div>
-          <h4>Uploaded Images:</h4>
-          <div className="image-preview" style={{ display: "flex"}}>
+        <div className="mb-4">
+          <h4 className="text-sm font-medium mb-2">Uploaded Images:</h4>
+          <div className="flex space-x-2">
             {images.map((image, index) => (
-              <div key={index} style={{ position: 'relative', margin: '10px' }}>
-                <img src={image} alt={`uploaded-${index}`} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                <IconButton
-                  style={{ position: 'absolute', top: 0, right: 0 }}
+              <div key={index} className="relative">
+                <img
+                  src={image}
+                  alt={`uploaded-${index}`}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  className="absolute top-0 right-0 bg-white p-1 rounded-full shadow-md"
                   onClick={() => handleRemoveImage(index)}
                 >
                   <CloseIcon fontSize="small" />
-                </IconButton>
+                </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Button to upload images */}
         <input
           accept="image/*"
           type="file"
           id="upload-image"
           multiple
           onChange={handleImageChange}
-          style={{ margin: '20px 0', display: 'none' }}
+          className="hidden"
         />
         <label htmlFor="upload-image">
-          <Button variant="contained" component="span">
+          <button className="w-full p-2 bg-blue-500 text-white rounded-md mt-4">
             Upload Images
-          </Button>
+          </button>
         </label>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleUpdate} variant="contained" color="primary">
-          Update
-        </Button>
-      </DialogActions>
-    </Dialog>
+
+        <div className="mt-4 flex justify-end space-x-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-sm rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleUpdate}
+            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-md"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

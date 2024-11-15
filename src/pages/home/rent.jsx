@@ -22,7 +22,7 @@ const Rent = () => {
   const [phone, setPhone] = useState("");
   const [rentStart, setRentStart] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [rentEnd, setRentEnd] = useState(format(addDays(new Date(), 2), "yyyy-MM-dd"));
-  const [payment, setPayment] = useState("PAY");
+  const [payment, setPayment] = useState("CASH");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
 
@@ -111,9 +111,10 @@ const Rent = () => {
       payment: payment,
       address: checkout.address,
       phone: checkout.phone,
-      orderDetail: orderDetail,
+      orderDetails: orderDetail,
       rentStart: checkout.rentStart,
       rentEnd: checkout.rentEnd,
+      status: 6
     };
 
     try {
@@ -171,7 +172,7 @@ const Rent = () => {
   }, [product.price, rentStart, rentEnd, quantity]);
 
   const handleChange = (field, value) => {
-    // Update local state
+    // Cập nhật giá trị local state
     if (field === "selectedProvinceId") {
       setSelectedProvinceId(value);
       fetchDistricts(value);
@@ -192,7 +193,7 @@ const Rent = () => {
       setRentEnd(value);
     }
   
-    // Update localStorage directly
+    // Cập nhật localStorage trực tiếp khi có sự thay đổi
     const updatedData = {
       selectedProvinceId,
       selectedDistrictId,
@@ -202,7 +203,7 @@ const Rent = () => {
       payment,
       rentStart,
       rentEnd,
-      [field]: value, // Override the specific field being changed
+      [field]: value, // Ghi đè giá trị của trường bị thay đổi
     };
     localStorage.setItem("checkout", JSON.stringify(updatedData));
   };
@@ -356,8 +357,8 @@ const Rent = () => {
           <div style={{ marginTop: "30px" }}>
             <h3 className="text-2xl font-semibold">Payment Method</h3>
             <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
-              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
+              <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
             </RadioGroup>
           </div>
           {payment === "PAY" && (

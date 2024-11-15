@@ -4,10 +4,13 @@ export const createOrder = async (data) => {
   return post("/orders", data);
 };
 
-export const getOrders = async (page, size, status) => {
+export const getOrders = async (page, size, status, type) => {
   let url = `/orders?page=${page}&size=${size}`;
   if (status !== "") {
     url += `&status=${status}`; // Add status filter if provided
+  }
+  if (type !== "") {
+    url += `&type=${type}`; // Add type filter if provided
   }
   const response = await get(url);
   return response; // assuming the API returns data with 'content' and 'totalPages'

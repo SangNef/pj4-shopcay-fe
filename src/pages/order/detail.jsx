@@ -50,13 +50,20 @@ const OrderDetail = () => {
   if (!order.id) return <div>Loading...</div>
 
   const statusText = {
-    0: 'Pending',
-    1: 'Confirmed',
-    2: 'Shipping',
-    3: 'Delivered',
-    4: 'Completed',
-    5: 'Canceled'
-  }
+    0: "Pending",
+    1: "Confirmed",
+    2: "Shipping",
+    3: "Delivered",
+    4: "Completed",
+    5: "Canceled",
+    6: "Pending",
+    7: "Confirmed",
+    8: "Shipping",
+    9: "Delivered",
+    10: "Returning",
+    11: "Completed",
+    12: "Canceled",
+  };
 
   const statusColors = {
     0: '#ffc107',
@@ -64,8 +71,14 @@ const OrderDetail = () => {
     2: '#007bff',
     3: '#28a745',
     4: '#fd7e14',
-    5: '#dc3545'
-  }
+    5: '#dc3545',
+    6: '#ffc107',
+    7: '#17a2b8',
+    8: '#007bff',
+    9: '#28a745',
+    10: '#ffc107',
+    11: '#fd7e14',
+  };
 
   return (
     <div style={{ margin: '24px', padding: '24px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
@@ -118,7 +131,7 @@ const OrderDetail = () => {
               {statusText[order.status]}
             </span>
           </p>
-          {order.status < 4 && (
+          {(order.status < 4 || (order.status > 5 && order.status < 11)) && (
             <button
               onClick={handleUpdateStatus}
               style={{
@@ -134,7 +147,7 @@ const OrderDetail = () => {
               Update Status
             </button>
           )}
-          {order.status === 0 && (
+          {(order.status === 0 || order.status === 6) && (
             <button
               onClick={handleCancelOrder}
               style={{

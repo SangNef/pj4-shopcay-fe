@@ -35,7 +35,7 @@ const UserOrder = () => {
   };
 
   const handleExtend = () => {
-    const response = extendOrder(id, { rentEnd: newEndDate, debt: additionalPayment});
+    const response = extendOrder(id, { rentEnd: newEndDate, debt: additionalPayment });
     console.log(response);
     setShowExtendModal(false);
     window.location.reload();
@@ -47,12 +47,14 @@ const UserOrder = () => {
 
   useEffect(() => {
     if (newEndDate && order) {
-      const additionalPayment = orderDetails.reduce((total, item) => {
-        const totalDays = differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart));
-        const extraDays = differenceInCalendarDays(new Date(newEndDate), new Date(order.rentEnd));
-        const pricePerDay = (item.product.price * item.qty) / totalDays;
-        return total + pricePerDay * extraDays;
-      }, 0).toFixed(0);
+      const additionalPayment = orderDetails
+        .reduce((total, item) => {
+          const totalDays = differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart));
+          const extraDays = differenceInCalendarDays(new Date(newEndDate), new Date(order.rentEnd));
+          const pricePerDay = (item.product.price * item.qty) / totalDays;
+          return total + pricePerDay * extraDays;
+        }, 0)
+        .toFixed(0);
       setAdditionalPayment(additionalPayment); // Cập nhật thêm vào state
     }
   }, [newEndDate, order]);
@@ -83,7 +85,7 @@ const UserOrder = () => {
         </p>
         <p>
           <strong>Status:</strong>{" "}
-          {["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled"][order.status]}
+          {["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled", "Pending", "Confirmed", "Shipping", "Delivered", "Return", "Completed", "Canceled"][order.status]}
         </p>
         <p>
           <strong>Payment Method:</strong> {order.payment}
@@ -99,13 +101,17 @@ const UserOrder = () => {
             <p>
               <strong>Start date:</strong> {order.rentStart} - <strong>End date:</strong> {order.rentEnd}
             </p>
-            <p><strong>Debt: </strong> ${order.debt}</p>
-            <button
-              className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
-              onClick={() => setShowExtendModal(true)} // Hiển thị modal
-            >
-              Extend
-            </button>
+            <p>
+              <strong>Debt: </strong> ${order.debt}
+            </p>
+            {order.status === 9 && (
+              <button
+                className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
+                onClick={() => setShowExtendModal(true)} // Hiển thị modal
+              >
+                Extend
+              </button>
+            )}
           </>
         )}
       </div>
@@ -192,8 +198,7 @@ const UserOrder = () => {
             </label>
             {newEndDate && (
               <div className="mt-4 text-gray-700">
-                <strong>Additional Payment:</strong> $
-                {additionalPayment}
+                <strong>Additional Payment:</strong> ${additionalPayment}
               </div>
             )}
             <div className="flex justify-end mt-4">
