@@ -126,7 +126,7 @@ const UserOrder = () => {
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Status:</p>
-          <p>{["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled"][order.status]}</p>
+          <p>{["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled", "Pending", "Confirmed", "Shipping", "Delivered", "Returning", "Completed", "Canceled"][order.status]}</p>
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Payment Method:</p>
