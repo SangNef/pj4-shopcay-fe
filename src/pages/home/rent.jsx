@@ -25,6 +25,7 @@ const Rent = () => {
   const [payment, setPayment] = useState("CASH");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [returning, setReturning] = useState("ADMIN");
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
@@ -114,7 +115,8 @@ const Rent = () => {
       orderDetails: orderDetail,
       rentStart: checkout.rentStart,
       rentEnd: checkout.rentEnd,
-      status: 6
+      status: 6,
+      returnBy: returning,
     };
 
     try {
@@ -164,12 +166,16 @@ const Rent = () => {
     if (product.price && rentStart && rentEnd) {
       const rentalDays = differenceInCalendarDays(new Date(rentEnd), new Date(rentStart));
       if (rentalDays > 0) {
-        setTotalPrice(rentalDays * product.rentPrice * quantity);
+        if (returning === "ADMIN") {
+          setTotalPrice(product.rentPrice * rentalDays + 10); // Add 10 if returning is "ADMIN"
+        } else {
+          setTotalPrice(product.rentPrice * rentalDays); // Regular price calculation
+        }
       } else {
-        setTotalPrice(0);
+        setTotalPrice(0); // Reset price if rental days is 0 or less
       }
     }
-  }, [product.price, rentStart, rentEnd, quantity]);
+  }, [product.price, rentStart, rentEnd, quantity, returning]);
 
   const handleChange = (field, value) => {
     // Cập nhật giá trị local state
@@ -192,7 +198,7 @@ const Rent = () => {
     } else if (field === "rentEnd") {
       setRentEnd(value);
     }
-  
+
     // Cập nhật localStorage trực tiếp khi có sự thay đổi
     const updatedData = {
       selectedProvinceId,
@@ -207,7 +213,7 @@ const Rent = () => {
     };
     localStorage.setItem("checkout", JSON.stringify(updatedData));
   };
-  
+
   // Sync localStorage on any relevant field change
   useEffect(() => {
     const checkoutData = {
@@ -354,6 +360,14 @@ const Rent = () => {
               />
             </div>
           </div>
+
+          <div className="mt-8">
+            <h3 className="text-2xl font-semibold">Returning Method</h3>
+            <RadioGroup value={returning} onChange={(e) => setReturning(e.target.value)}>
+              <FormControlLabel value="ADMIN" control={<Radio />} label="Admin come to the place" />
+              <FormControlLabel value="USER" control={<Radio />} label="Self transport" />
+            </RadioGroup>
+          </div>
           <div style={{ marginTop: "30px" }}>
             <h3 className="text-2xl font-semibold">Payment Method</h3>
             <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
@@ -361,17 +375,27 @@ const Rent = () => {
               <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
             </RadioGroup>
           </div>
+          <p className="text-gray-700 text-sm">
+            (You must pay a deposit equivalent to 50% of the tree's value. We will refund it when you send the tree back
+            to the garden, and we guarantee that if the tree shows signs of damage, we will refuse any refund request.)
+          </p>
           {payment === "PAY" && (
-            <PayPalScriptProvider options={{ "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8" }}>
+            <PayPalScriptProvider
+              options={{
+                "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8",
+              }}
+            >
               <PayPalButtons
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
                   return actions.order.create({
-                    purchase_units: [{
-                      amount: {
-                        value: totalPrice.toFixed(2),
+                    purchase_units: [
+                      {
+                        amount: {
+                          value: totalPrice.toFixed(2),
+                        },
                       },
-                    }],
+                    ],
                   });
                 }}
                 onApprove={(data, actions) => {
@@ -383,7 +407,7 @@ const Rent = () => {
               />
             </PayPalScriptProvider>
           )}
-          
+
           {payment === "CASH" && (
             <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
               Place Order
@@ -399,17 +423,35 @@ const Rent = () => {
             <img src={product.images?.[0]} alt={product.name} className="w-32 h-32 object-cover" />
             <div>
               <h3 className="text-xl font-semibold">{product.name}</h3>
-              <p className="text-lg"><span className="font-semibold">Price: </span>${product.rentPrice}</p>
-              <p className="text-lg"><span className="font-semibold">Quantity: </span>{quantity}</p>
-              <p className="text-lg"><span className="font-semibold">Total Price: </span>${product.rentPrice * quantity}</p>
+              <p className="text-lg">
+                <span className="font-semibold">Price: </span>${product.rentPrice}
+              </p>
+              <p className="text-lg">
+                <span className="font-semibold">Quantity: </span>
+                {quantity}
+              </p>
+              <p className="text-lg">
+                <span className="font-semibold">Total Price: </span>${product.rentPrice * quantity}
+              </p>
             </div>
           </div>
         </div>
         <div className="bg-gray-200 border rounded h-max p-4 mt-4">
           <h3 className="text-2xl font-semibold mb-4">Rent Details</h3>
-          <p className="text-lg"><span className="font-semibold">Product Price: </span>${product.rentPrice * quantity}</p>
-          <p className="text-xl"><span className="font-semibold">Rent Day: </span>{differenceInCalendarDays(new Date(rentEnd), new Date(rentStart))} days</p>
-          <p className="text-xl"><span className="font-semibold">Total: </span>${totalPrice}</p>
+          <p className="text-lg">
+            <span className="font-semibold">Product Price: </span>${product.rentPrice * quantity}
+          </p>
+          <p className="text-xl">
+            <span className="font-semibold">Rent Day: </span>
+            {differenceInCalendarDays(new Date(rentEnd), new Date(rentStart))} days
+          </p>
+          <p className="text-xl">
+            <span className="font-semibold">Shipping: </span>
+            {returning === "ADMIN" ? "$10" : "$0"}
+          </p>
+          <p className="text-xl">
+            <span className="font-semibold">Total: </span>${totalPrice}
+          </p>
         </div>
       </div>
     </div>

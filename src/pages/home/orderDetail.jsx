@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { extendOrder, getOrder, sendReview } from "../../api/order";
+import { extendOrder, getOrder, sendReview, updateStatus } from "../../api/order";
 import { differenceInCalendarDays } from "date-fns";
 
 const UserOrder = () => {
@@ -59,6 +59,15 @@ const UserOrder = () => {
     }
   }, [newEndDate, order]);
 
+  const handleUpdateStatus = async (id) => {
+    try {
+      await updateStatus(id);
+      fetchOrder();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!order) return <div>Order not found</div>;
 
@@ -69,116 +78,119 @@ const UserOrder = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">Order Details</h2>
 
       {/* Order Summary */}
-      <div className="mb-6">
-        <p>
-          <strong>Order ID:</strong> {order.id}
-        </p>
-        <p>
-          <strong>User:</strong> {order.user.fullname} ({order.user.email})
-        </p>
-        <p>
-          <strong>Phone:</strong> {order.phone}
-        </p>
-        <p>
-          <strong>Address:</strong> {order.address}, {order.ward.name}, {order.ward.district.name},{" "}
-          {order.ward.district.province.name}
-        </p>
-        <p>
-          <strong>Status:</strong>{" "}
-          {["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled", "Pending", "Confirmed", "Shipping", "Delivered", "Return", "Completed", "Canceled"][order.status]}
-        </p>
-        <p>
-          <strong>Payment Method:</strong> {order.payment}
-        </p>
-        <p>
-          <strong>Total Price:</strong> ${order.price}
-        </p>
-        <p>
-          <strong>Type:</strong> {order.type}
-        </p>
+      <div className="border rounded mb-6">
+        <div className="grid grid-cols-2 text-gray-700 font-semibold p-2 bg-gray-100">
+          <p>Detail</p>
+          <p>Information</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Order ID:</p>
+          <p>{order.id}</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">User:</p>
+          <p>
+            {order.user.fullname} ({order.user.email})
+          </p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Phone:</p>
+          <p>{order.phone}</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Address:</p>
+          <p>
+            {order.address}, {order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Status:</p>
+          <p>{
+            [
+              "Pending",
+              "Confirmed",
+              "Shipping",
+              "Delivered",
+              "Completed",
+              "Canceled",
+              "Pending",
+              "Confirmed",
+              "Shipping",
+              "Delivered",
+              "Return",
+              "Completed",
+              "Canceled",
+            ][order.status]
+          }</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Payment Method:</p>
+          <p>{order.payment}</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Total Price:</p>
+          <p>${order.price}</p>
+        </div>
+        <div className="grid grid-cols-2 p-2 border-t">
+          <p className="font-semibold">Type:</p>
+          <p>{order.type}</p>
+        </div>
         {order.type === "RENT" && (
           <>
-            <p>
-              <strong>Start date:</strong> {order.rentStart} - <strong>End date:</strong> {order.rentEnd}
-            </p>
-            <p>
-              <strong>Debt: </strong> ${order.debt}
-            </p>
-            {order.status === 9 && (
-              <button
-                className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
-                onClick={() => setShowExtendModal(true)} // Hiển thị modal
-              >
+            <div className="grid grid-cols-2 p-2 border-t">
+              <p className="font-semibold">Start Date:</p>
+              <p>{order.rentStart}</p>
+            </div>
+            <div className="grid grid-cols-2 p-2 border-t">
+              <p className="font-semibold">End Date:</p>
+              <p>{order.rentEnd}</p>
+            </div>
+            <div className="grid grid-cols-2 p-2 border-t">
+              <p className="font-semibold">Debt:</p>
+              <p>${order.debt}</p>
+            </div>
+            <div className="flex justify-center p-2">
+              <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={() => setShowExtendModal(true)}>
                 Extend
               </button>
-            )}
+            </div>
           </>
         )}
       </div>
 
-      {/* Order Items */}
+      {/* Order Items Table */}
       <div>
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Order Items</h3>
-        {orderDetails.map((item) => (
-          <div key={item.id} className="border p-4 rounded mb-4">
-            <div className="flex items-center">
-              <img
-                src={item.product.images[0]}
-                alt={item.product.name}
-                className="w-24 h-24 object-cover rounded mr-4"
-              />
-              <div>
-                <p>
-                  <strong>Product:</strong> {item.product.name}
-                </p>
-                <p>
-                  <strong>Category:</strong> {item.product.category}
-                </p>
-                <p>
-                  <strong>Price per Unit:</strong> ${item.product.price}
-                </p>
-                <p>
-                  <strong>Quantity:</strong> {item.qty}
-                </p>
-                <p>
-                  <strong>Total:</strong> ${item.price}
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mt-2">
-              <strong>Description:</strong> {item.product.description}
-            </p>
-            {item.reviews && item.reviews.length > 0 ? (
-              <div className="mt-4">
-                <h4 className="font-semibold text-gray-800">Reviews:</h4>
-                {item.reviews.map((review) => (
-                  <div key={review.id} className="mt-2">
-                    <p>{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              // Only show textarea for statuses 4 (Completed) and 6 (Canceled)
-              (order.status === 4 || order.status === 11) && (
-                <div className="mt-4">
-                  <h4 className="font-semibold text-gray-800">Leave a Comment:</h4>
-                  <textarea
-                    className="w-full p-2 border rounded mt-2"
-                    placeholder="Write your comment here..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <button
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
-                    onClick={() => handleSendReview(item.id)}
-                  >
-                    Submit Comment
-                  </button>
-                </div>
-              )
-            )}
+        <div className="border rounded">
+          <div className="grid grid-cols-4 text-gray-700 font-semibold p-2 bg-gray-100">
+            <p>Product</p>
+            <p>Price</p>
+            <p>QTY</p>
+            {order.type === "RENT" && <p>Days</p>}
+            <p>Total</p>
           </div>
-        ))}
+          {orderDetails.map((item) => (
+            <div key={item.id} className="grid grid-cols-4 items-center p-2 border-t">
+              <p>{item.product.name}</p>
+              {order.type === "RENT" ? (
+                <p>${item.product.rentPrice}/day</p>
+              ) : (
+                <p>${item.product.price}</p>
+              )}
+              <p>{item.qty}</p>
+              {order.type === "RENT" && (
+                <p>{differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart))}</p>
+              )}
+              <p>${item.price}</p>
+            </div>
+          ))}
+          <div className="grid grid-cols-4 p-2 bg-gray-100 font-semibold text-gray-800">
+            <p></p>
+            <p></p>
+            <p>Total:</p>
+            <p>${order.price}</p>
+          </div>
+        </div>
       </div>
 
       {/* Modal Extend */}

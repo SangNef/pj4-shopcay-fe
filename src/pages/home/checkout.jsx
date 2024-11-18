@@ -92,7 +92,7 @@ const Checkout = () => {
       address: checkout.address,
       phone: checkout.phone,
       orderDetails: orderDetail,
-    }
+    };
 
     try {
       const response = await createOrder(orderData);
@@ -267,26 +267,29 @@ const Checkout = () => {
           </div>
           <div style={{ marginTop: "30px" }}>
             <h3 className="text-2xl font-semibold">Payment Method</h3>
-            <RadioGroup
-              value={payment}
-              onChange={(e) => setPayment(e.target.value)}
-            >
+            <RadioGroup value={payment} onChange={(e) => setPayment(e.target.value)}>
               <FormControlLabel value="CASH" control={<Radio />} label="Cash on Delivery" />
               <FormControlLabel value="PAY" control={<Radio />} label="PayPal" />
             </RadioGroup>
           </div>
 
           {payment === "PAY" && (
-            <PayPalScriptProvider options={{ "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8" }}>
+            <PayPalScriptProvider
+              options={{
+                "client-id": "AbJhiq9DxgLJ3tSTj5A643WM8ipUDGNZCZgrdXyOAr7AbfrKC9WMUfnZKiOZPR5ZLuGVtd_2iGo6zuS8",
+              }}
+            >
               <PayPalButtons
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
                   return actions.order.create({
-                    purchase_units: [{
-                      amount: {
-                        value: totalPrice.toFixed(2),
+                    purchase_units: [
+                      {
+                        amount: {
+                          value: totalPrice.toFixed(2),
+                        },
                       },
-                    }],
+                    ],
                   });
                 }}
                 onApprove={(data, actions) => {
@@ -298,7 +301,7 @@ const Checkout = () => {
               />
             </PayPalScriptProvider>
           )}
-          
+
           {payment === "CASH" && (
             <Button variant="contained" color="primary" onClick={handlePlaceOrder} style={{ marginTop: "20px" }}>
               Place Order

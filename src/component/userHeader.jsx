@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuItem, IconButton, Button, Badge } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom"; // Use NavLink for active state
 
 const Header = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -64,23 +64,23 @@ const Header = () => {
         }}
       >
         <div>
-          <h1 style={{ margin: 0, color: "#fff" }}>Logo</h1>
+          <h1 style={{ margin: 0, color: "#fff" }} className="text-2xl font-semibold">ALA<span className="text-green-400">ZEA</span></h1>
         </div>
         <nav>
           <ul style={{ display: "flex", listStyle: "none", padding: 0, margin: 0 }}>
             <li style={{ margin: "0 10px" }}>
-              <a
-                href="/"
-                style={{
+              <NavLink
+                to="/"
+                style={({ isActive }) => ({
                   textDecoration: "none",
-                  color: "#fff",
+                  color: isActive ? "green" : "#fff", // Active state color
                   padding: "8px 12px",
                   borderRadius: "4px",
-                  transition: "background-color 0.3s",
-                }}
+                  transition: "background-color 0.3s, color 0.3s",
+                })}
               >
                 Home
-              </a>
+              </NavLink>
             </li>
 
             {/* Products with Submenu */}
@@ -89,18 +89,21 @@ const Header = () => {
               onMouseEnter={handleMouseEnter} // Show submenu on mouse enter
               onMouseLeave={handleMouseLeave} // Hide submenu after 1s on mouse leave
             >
-              <a
-                href="#"
-                style={{
+              <NavLink
+                to="/products"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent navigation
+                }}
+                style={({ isActive }) => ({
                   textDecoration: "none",
-                  color: "#fff",
+                  color: isActive ? "green" : "#fff", // Active state color
                   padding: "8px 12px",
                   borderRadius: "4px",
-                  transition: "background-color 0.3s",
-                }}
+                  transition: "background-color 0.3s, color 0.3s",
+                })}
               >
                 Products
-              </a>
+              </NavLink>
 
               {/* Submenu */}
               {productMenuOpen && (
@@ -119,61 +122,91 @@ const Header = () => {
                   }}
                 >
                   <li style={{ padding: "8px 12px" }}>
-                    <a href="/products/fruit-trees" style={{ textDecoration: "none", color: "#333" }}>
+                    <NavLink
+                      to="/products/fruit-trees"
+                      style={({ isActive }) => ({
+                        textDecoration: "none",
+                        color: isActive ? "green" : "#333", // Active state color
+                      })}
+                    >
                       Fruit Tree
-                    </a>
+                    </NavLink>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a href="/products/flowering-trees" style={{ textDecoration: "none", color: "#333" }}>
+                    <NavLink
+                      to="/products/flowering-trees"
+                      style={({ isActive }) => ({
+                        textDecoration: "none",
+                        color: isActive ? "green" : "#333", // Active state color
+                      })}
+                    >
                       Flowering Tree
-                    </a>
+                    </NavLink>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a href="/products/shade-trees" style={{ textDecoration: "none", color: "#333" }}>
+                    <NavLink
+                      to="/products/shade-trees"
+                      style={({ isActive }) => ({
+                        textDecoration: "none",
+                        color: isActive ? "green" : "#333", // Active state color
+                      })}
+                    >
                       Shade Tree
-                    </a>
+                    </NavLink>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a href="/products/ornamental-trees" style={{ textDecoration: "none", color: "#333" }}>
+                    <NavLink
+                      to="/products/ornamental-trees"
+                      style={({ isActive }) => ({
+                        textDecoration: "none",
+                        color: isActive ? "green" : "#333", // Active state color
+                      })}
+                    >
                       Ornamental Tree
-                    </a>
+                    </NavLink>
                   </li>
                   <li style={{ padding: "8px 12px" }}>
-                    <a href="/products/evergreen-trees" style={{ textDecoration: "none", color: "#333" }}>
+                    <NavLink
+                      to="/products/evergreen-trees"
+                      style={({ isActive }) => ({
+                        textDecoration: "none",
+                        color: isActive ? "green" : "#333", // Active state color
+                      })}
+                    >
                       Evergreen Tree
-                    </a>
+                    </NavLink>
                   </li>
                 </ul>
               )}
             </li>
 
             <li style={{ margin: "0 10px" }}>
-              <a
-                href="/about"
-                style={{
+              <NavLink
+                to="/about"
+                style={({ isActive }) => ({
                   textDecoration: "none",
-                  color: "#fff",
+                  color: isActive ? "green" : "#fff", // Active state color
                   padding: "8px 12px",
                   borderRadius: "4px",
-                  transition: "background-color 0.3s",
-                }}
+                  transition: "background-color 0.3s, color 0.3s",
+                })}
               >
                 About
-              </a>
+              </NavLink>
             </li>
             <li style={{ margin: "0 10px" }}>
-              <a
-                href="/contact"
-                style={{
+              <NavLink
+                to="/contact"
+                style={({ isActive }) => ({
                   textDecoration: "none",
-                  color: "#fff",
+                  color: isActive ? "green" : "#fff", // Active state color
                   padding: "8px 12px",
                   borderRadius: "4px",
-                  transition: "background-color 0.3s",
-                }}
+                  transition: "background-color 0.3s, color 0.3s",
+                })}
               >
                 Contact
-              </a>
+              </NavLink>
             </li>
           </ul>
         </nav>

@@ -86,7 +86,7 @@ const Category = () => {
 
       <div className="absolute top-0 left-0 w-full h-[300px] bg-black bg-opacity-50 z-1" />
 
-      <div className="max-w-[1120px] mx-auto flex gap-5 mt-10">
+      <div className="max-w-7xl mx-auto flex gap-5 mt-10">
         {/* Filter Column */}
         <div className="w-1/4 p-5 bg-gray-100 rounded-lg">
           <h3 className="mb-4 text-gray-800">Filters</h3>

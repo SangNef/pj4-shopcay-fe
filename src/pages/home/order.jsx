@@ -166,6 +166,16 @@ const Order = () => {
                       Cancel Order
                     </button>
                   )}
+                  {order.status === 9 &&
+                    new Date().toISOString().split("T")[0] === order.rentEnd &&
+                    order.returnBy === "USER" && (
+                      <button
+                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
+                        onClick={() => handleUpdateStatus(order.id)} // Hiển thị modal
+                      >
+                        Returning
+                      </button>
+                    )}
                 </td>
               </tr>
             ))}

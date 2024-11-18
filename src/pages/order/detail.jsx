@@ -80,6 +80,12 @@ const OrderDetail = () => {
     11: '#fd7e14',
   };
 
+  // Check if rent end date has passed and return should be visible
+  const rentEndDate = new Date(order.rentEnd)
+  const currentDate = new Date()
+
+  const isReturnable = order.type === 'RENT' && currentDate >= rentEndDate && order.status === 9;
+
   return (
     <div style={{ margin: '24px', padding: '24px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Order Detail</h1>
@@ -131,6 +137,7 @@ const OrderDetail = () => {
               {statusText[order.status]}
             </span>
           </p>
+
           {(order.status < 4 || (order.status > 5 && order.status < 11)) && (
             <button
               onClick={handleUpdateStatus}
@@ -147,6 +154,14 @@ const OrderDetail = () => {
               Update Status
             </button>
           )}
+
+          {/* Conditionally show the "Return" button */}
+          {isReturnable && (
+            <button className="bg-green-600 text-white px-4 py-2 ml-4">
+              Return
+            </button>
+          )}
+
           {(order.status === 0 || order.status === 6) && (
             <button
               onClick={handleCancelOrder}
