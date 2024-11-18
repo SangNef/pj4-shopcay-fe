@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, TextField, Typography, Link, Divider, Checkbox, FormControlLabel } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../api/auth"; // Assuming you have an API for authentication
@@ -72,6 +72,10 @@ const Login = () => {
 
     return isValid;
   };
+
+  useEffect(() => {
+    document.title = "AlaZea - Sign In";
+  }, []);
 
   return (
     <SignInContainer>

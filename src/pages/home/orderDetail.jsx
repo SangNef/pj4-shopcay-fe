@@ -14,9 +14,7 @@ const StarRating = ({ rating, onRatingChange }) => {
       {[...Array(5)].map((_, index) => (
         <span
           key={index}
-          className={`cursor-pointer text-2xl ${
-            index < rating ? "text-yellow-500" : "text-gray-300"
-          }`}
+          className={`cursor-pointer text-2xl ${index < rating ? "text-yellow-500" : "text-gray-300"}`}
           onClick={() => handleClick(index + 1)}
         >
           ★
@@ -30,7 +28,7 @@ const UserOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [comment, setComment] = useState("");
-  const [rating, setRating] = useState(0);  // New state for the rating
+  const [rating, setRating] = useState(0); // New state for the rating
   const [loading, setLoading] = useState(true);
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [newEndDate, setNewEndDate] = useState("");
@@ -114,7 +112,9 @@ const UserOrder = () => {
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">User:</p>
-          <p>{order.user.fullname} ({order.user.email})</p>
+          <p>
+            {order.user.fullname} ({order.user.email})
+          </p>
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Phone:</p>
@@ -122,11 +122,31 @@ const UserOrder = () => {
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Address:</p>
-          <p>{order.address}, {order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}</p>
+          <p>
+            {order.address}, {order.ward.name}, {order.ward.district.name}, {order.ward.district.province.name}
+          </p>
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Status:</p>
-          <p>{["Pending", "Confirmed", "Shipping", "Delivered", "Completed", "Canceled", "Pending", "Confirmed", "Shipping", "Delivered", "Returning", "Completed", "Canceled"][order.status]}</p>
+          <p>
+            {
+              [
+                "Pending",
+                "Confirmed",
+                "Shipping",
+                "Delivered",
+                "Completed",
+                "Canceled",
+                "Pending",
+                "Confirmed",
+                "Shipping",
+                "Delivered",
+                "Returning",
+                "Completed",
+                "Canceled",
+              ][order.status]
+            }
+          </p>
         </div>
         <div className="grid grid-cols-2 p-2 border-t">
           <p className="font-semibold">Payment Method:</p>
@@ -155,6 +175,14 @@ const UserOrder = () => {
                 <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={() => setShowExtendModal(true)}>
                   Extend
                 </button>
+                {new Date().toISOString().split("T")[0] === order.rentEnd && order.returnBy === "USER" && (
+                  <button
+                    className="px-4 py-2 bg-green-600 text-white rounded ml-4"
+                    onClick={() => handleUpdateStatus(order.id)}
+                  >
+                    Returning
+                  </button>
+                )}
               </div>
             )}
           </>
@@ -226,6 +254,39 @@ const UserOrder = () => {
           </div>
         ))}
       </div>
+      {showExtendModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">Extend Rental Period</h3>
+            <label className="block mb-2">
+              New End Date:
+              <input
+                type="date"
+                className="w-full p-2 border rounded"
+                min={order.rentEnd}
+                value={newEndDate}
+                onChange={(e) => setNewEndDate(e.target.value)}
+              />
+            </label>
+            {newEndDate && (
+              <div className="mt-4 text-gray-700">
+                <strong>Additional Payment:</strong> ${additionalPayment}
+              </div>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded mr-2"
+                onClick={() => setShowExtendModal(false)}
+              >
+                Cancel
+              </button>
+              <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleExtend}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -76,6 +76,10 @@ const Category = () => {
     setSortOrder(e.target.value);
   };
 
+  useEffect(() => {
+    document.title = "AlaZea - Shop";
+  }, []);
+
   return (
     <div className="relative max-w-full overflow-hidden">
       <img src={ov} alt="" className="h-[300px] w-full object-cover" />

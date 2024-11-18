@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +21,10 @@ const Contact = () => {
     alert('Your message has been sent!');
     setFormData({ name: '', email: '', message: '' });
   };
+
+  useEffect(() => {
+    document.title = 'AlaZea - Contact Us';
+  }, []);
 
   return (
     <>

@@ -58,6 +58,10 @@ const Product = () => {
     setSelectedProduct(null);
   };
 
+  useEffect(() => {
+    document.title = "AlaZea - Products";
+  }, []);
+
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       {/* Breadcrumbs */}

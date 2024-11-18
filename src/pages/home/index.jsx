@@ -16,6 +16,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchProducts();
+    document.title = "AlaZea - Home";
   }, []);
 
   const handleBuyNow = (productId) => {

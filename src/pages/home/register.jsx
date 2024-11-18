@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, TextField, Button, Typography, Link, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../api/auth"; // Import your registration API function
@@ -48,6 +48,10 @@ const Register = () => {
       setError("Username or Email already exists.");
     }
   };
+
+  useEffect(() => {
+    document.title = "AlaZea - Register";
+  }, []);
 
   return (
     <SignInContainer>

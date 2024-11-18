@@ -25,6 +25,10 @@ const Order = () => {
     fetchOrders(page);
   }, [page]);
 
+  useEffect(() => {
+    document.title = "AlaZea - Orders";
+  }, []);
+
   const handleUpdateStatus = async (id) => {
     try {
       await updateStatus(id);
@@ -144,7 +148,7 @@ const Order = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 h-full flex items-center justify-center gap-4 mb-8">
-                  {order.status === 2 || order.status === 8 && (
+                  {(order.status === 2 || order.status === 8) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent navigating when clicking the button

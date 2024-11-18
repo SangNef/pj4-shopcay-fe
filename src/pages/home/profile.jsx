@@ -40,6 +40,10 @@ const Profile = () => {
   //     setUsername(user.username);
   //   }, [user]);
 
+  useEffect(() => {
+    document.title = "AlaZea - Profile";
+  }, []);
+
   return (
     <div className="max-w-5xl mx-auto my-4">
       <div className="border rounded-xl p-6 mb-4">

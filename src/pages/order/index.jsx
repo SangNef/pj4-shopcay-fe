@@ -28,6 +28,10 @@ const Order = () => {
     fetchOrders(page - 1, statusFilter, typeFilter);
   }, [page, statusFilter, typeFilter]);
 
+  useEffect(() => {
+    document.title = "AlaZea - Orders";
+  }, []);
+
   const getStatusDetails = (status) => {
     switch (status) {
       case 0:

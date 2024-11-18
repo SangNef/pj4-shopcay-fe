@@ -12,6 +12,7 @@ const Customer = () => {
 
   useEffect(() => {
     fetchCustomers();
+    document.title = "AlaZea - Customers";
   }, []);
 
   return (
