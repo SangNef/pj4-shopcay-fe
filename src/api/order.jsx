@@ -46,8 +46,12 @@ export const getOrdersByUser = async (userId, page = 1, pageSize = 10) => {
 
 export const sendReview = async (id, data) => {
   return post(`/reviews/${id}`, data);
-}
+};
 
 export const extendOrder = async (id, data) => {
   return put(`/orders/extend/${id}`, data);
-}
+};
+
+export const refundOrder = async (id, data) => {
+  return put(`/orders/refund/${id}`, data);
+};

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../../api/product";
 import { createOrder, getDistricts, getProvinces, getWards } from "../../api/order";
-import { Button, FormControlLabel, Radio, RadioGroup, Snackbar } from "@mui/material";
+import { Box, Button, FormControlLabel, Modal, Radio, RadioGroup, Snackbar, Typography } from "@mui/material";
 import { addDays, format, differenceInCalendarDays } from "date-fns";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
@@ -18,6 +18,8 @@ const Rent = () => {
   const [wards, setWards] = useState([]);
   const [selectedWardId, setSelectedWardId] = useState(null);
 
+  const [open, setOpen] = useState(false);
+
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [rentStart, setRentStart] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
@@ -29,6 +31,9 @@ const Rent = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const fetchProduct = async () => {
     try {
@@ -167,9 +172,9 @@ const Rent = () => {
       const rentalDays = differenceInCalendarDays(new Date(rentEnd), new Date(rentStart));
       if (rentalDays > 0) {
         if (returning === "ADMIN") {
-          setTotalPrice(product.rentPrice * rentalDays + 10); // Add 10 if returning is "ADMIN"
+          setTotalPrice(product.rentPrice * quantity * rentalDays + product.price * quantity * 1.2 + 10); // Add 10 if returning is "ADMIN"
         } else {
-          setTotalPrice(product.rentPrice * rentalDays); // Regular price calculation
+          setTotalPrice(product.rentPrice * quantity * rentalDays + product.price * quantity * 1.2); // Regular price calculation
         }
       } else {
         setTotalPrice(0); // Reset price if rental days is 0 or less
@@ -376,9 +381,43 @@ const Rent = () => {
             </RadioGroup>
           </div>
           <p className="text-gray-700 text-sm">
-            (You must pay a deposit equivalent to 50% of the tree's value. We will refund it when you send the tree back
-            to the garden, and we guarantee that if the tree shows signs of damage, we will refuse any refund request.)
+            you agree to our{" "}
+            <span onClick={handleOpen} style={{ color: "blue", cursor: "pointer" }}>
+              tree rental terms
+            </span>
+            .
           </p>
+          <Modal open={open} onClose={handleClose}>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 600,
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                Tree Rental Terms
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                Please carefully read and understand the following terms:
+              </Typography>
+              <ul style={{ paddingLeft: "1rem", lineHeight: "1.8" }}>
+                <li>- You must pay 120% of the tree's value in advance.</li>
+                <li>- The deposit will be refunded after the rental period is completed.</li>
+                <li>- In case of tree damage or loss, compensation will be required.</li>
+                <li>- Rental is only applicable to trees listed in our rental catalog.</li>
+                <li>- You are responsible for proper care of the tree during the rental period.</li>
+                <li>- Transportation costs are covered by the renter.</li>
+                <li>- If the tree is returned late, the deposit will not be refunded.</li>
+              </ul>
+            </Box>
+          </Modal>
           {payment === "PAY" && (
             <PayPalScriptProvider
               options={{
@@ -441,11 +480,15 @@ const Rent = () => {
           <p className="text-lg">
             <span className="font-semibold">Product Price: </span>${product.rentPrice * quantity}
           </p>
-          <p className="text-xl">
+          <p className="text-lg">
+            <span className="font-semibold">Deposit: </span>${product.price *  quantity * 1.2}
+          </p>
+
+          <p className="text-lg">
             <span className="font-semibold">Rent Day: </span>
             {differenceInCalendarDays(new Date(rentEnd), new Date(rentStart))} days
           </p>
-          <p className="text-xl">
+          <p className="text-lg">
             <span className="font-semibold">Shipping: </span>
             {returning === "ADMIN" ? "$10" : "$0"}
           </p>
