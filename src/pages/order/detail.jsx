@@ -11,7 +11,8 @@ const OrderDetail = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
-  const [refundAmount, setRefundAmount] = useState("");
+  const [refundPercentage, setRefundPercentage] = useState(""); // Giá trị phần trăm
+  const [refundAmount, setRefundAmount] = useState(0); // Giá trị hoàn trả
 
   const fetchOrder = async () => {
     try {
@@ -244,13 +245,25 @@ const OrderDetail = () => {
           <Dialog open={isRefundModalOpen} onClose={closeRefundModal}>
             <DialogTitle>Refund Order</DialogTitle>
             <DialogContent>
+              <label htmlFor="refundAmount" style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>
+                Refund Amount (% of Deposit)
+              </label>
               <input
                 type="number"
                 id="refundAmount"
                 value={refundAmount}
-                onChange={(e) => setRefundAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
-                placeholder="Enter refund amount"
+                onChange={(e) => {
+                  const value = Math.min(Number(e.target.value), 100); // Giới hạn tối đa là 100
+                  setRefundAmount(value);
+                }}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  fontSize: "16px",
+                }}
+                placeholder="Enter refund amount (e.g., 50 for 50%)"
               />
             </DialogContent>
             <DialogActions>
