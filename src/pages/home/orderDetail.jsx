@@ -58,7 +58,7 @@ const UserOrder = () => {
   };
 
   const handleExtend = () => {
-    const response = extendOrder(id, { rentEnd: newEndDate, debt: additionalPayment });
+    const response = extendOrder(id, { rentEnd: newEndDate, deposit: additionalPayment });
     console.log(response);
     setShowExtendModal(false);
     window.location.reload();
@@ -74,7 +74,7 @@ const UserOrder = () => {
         .reduce((total, item) => {
           const totalDays = differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart));
           const extraDays = differenceInCalendarDays(new Date(newEndDate), new Date(order.rentEnd));
-          const pricePerDay = (item.product.price * item.qty) / totalDays;
+          const pricePerDay = (item.product.rentPrice * item.qty) / totalDays;
           return total + pricePerDay * extraDays;
         }, 0)
         .toFixed(0);
@@ -158,6 +158,10 @@ const UserOrder = () => {
         </div>
         {order.type === "RENT" && (
           <>
+            <div className="grid grid-cols-2 p-2 border-t">
+              <p className="font-semibold">Deposit:</p>
+              <p>${order.deposit}</p>
+            </div>
             <div className="grid grid-cols-2 p-2 border-t">
               <p className="font-semibold">Start Date:</p>
               <p>{order.rentStart}</p>

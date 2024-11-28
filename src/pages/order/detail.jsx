@@ -183,7 +183,7 @@ const OrderDetail = () => {
           </p>
           {order.type == "RENT" && (
             <p>
-              <strong>Debt:</strong> ${order.debt}
+              <strong>Deposit:</strong> ${order.deposit}
             </p>
           )}
           <p>

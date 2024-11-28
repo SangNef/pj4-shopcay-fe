@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { updateProduct } from "../../api/product"; // Import API function
 import axios from "axios"; // Make sure to import axios
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 
 const Edit = ({ open, onClose, product, onProductUpdated }) => {
   const [updatedProduct, setUpdatedProduct] = useState({ ...product });
@@ -32,6 +32,7 @@ const Edit = ({ open, onClose, product, onProductUpdated }) => {
   };
 
   const handleImageChange = async (e) => {
+    console.log(e.target.files); // Debug
     const files = Array.from(e.target.files);
     const uploadedImages = await Promise.all(files.map(uploadImage));
 
@@ -73,7 +74,7 @@ const Edit = ({ open, onClose, product, onProductUpdated }) => {
   };
 
   return (
-    <div className={`fixed inset-0 z-50 bg-gray-900 bg-opacity-50 ${open ? 'block' : 'hidden'}`}>
+    <div className={`fixed inset-0 z-50 bg-gray-900 bg-opacity-50 h-screen overflow-hidden ${open ? "block" : "hidden"}`}>
       <div className="bg-white rounded-lg shadow-lg w-full md:max-w-3xl max-h-[600px] overflow-y-auto mx-auto mt-32 p-6">
         <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
 
@@ -166,11 +167,7 @@ const Edit = ({ open, onClose, product, onProductUpdated }) => {
           <div className="flex space-x-2">
             {images.map((image, index) => (
               <div key={index} className="relative">
-                <img
-                  src={image}
-                  alt={`uploaded-${index}`}
-                  className="w-24 h-24 object-cover rounded-md"
-                />
+                <img src={image} alt={`uploaded-${index}`} className="w-24 h-24 object-cover rounded-md" />
                 <button
                   type="button"
                   className="absolute top-0 right-0 bg-white p-1 rounded-full shadow-md"
@@ -191,23 +188,13 @@ const Edit = ({ open, onClose, product, onProductUpdated }) => {
           onChange={handleImageChange}
           className="hidden"
         />
-        <label htmlFor="upload-image">
-          <button className="w-full p-2 bg-blue-500 text-white rounded-md mt-4">
-            Upload Images
-          </button>
-        </label>
+        <label htmlFor="upload-image">Upload Images</label>
 
         <div className="mt-4 flex justify-end space-x-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-sm rounded-md"
-          >
+          <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-sm rounded-md">
             Cancel
           </button>
-          <button
-            onClick={handleUpdate}
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-md"
-          >
+          <button onClick={handleUpdate} className="px-4 py-2 bg-blue-500 text-white text-sm rounded-md">
             Update
           </button>
         </div>

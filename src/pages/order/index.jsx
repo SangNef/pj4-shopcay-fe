@@ -171,7 +171,7 @@ const Order = () => {
                 </td>
                 <td className="px-4 py-3">{order.user.fullname}</td>
                 <td className="px-4 py-3">{order.type}</td>
-                <td className="px-4 py-3">${order.price}</td>
+                <td className="px-4 py-3">${order.price} {order.deposit ? `Deposit: $${order.deposit}` : ""}</td>
                 <td className="px-4 py-3">{order.payment}</td>
                 <td className="px-4 py-3">
                   <span

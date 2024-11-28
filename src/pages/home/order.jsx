@@ -136,7 +136,10 @@ const Order = () => {
                     {order.type}
                   </span>
                 </td>
-                <td className="px-6 py-4">${order.price}</td>
+                <td className="px-6 py-4">
+                  ${order.price} {order.deposit ? `Deposit: $${order.deposit}` : ""}
+                </td>
+
                 <td className="px-6 py-4">
                   <span
                     style={{
