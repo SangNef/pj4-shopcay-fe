@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, TextField, Button, DialogActions } from "@mui/material";
 import { getOrder, updateStatus, cancelOrder, refundOrder } from "../../api/order";
+import { differenceInCalendarDays } from "date-fns";
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -125,13 +126,24 @@ const OrderDetail = () => {
                 <strong>Name:</strong> {orderDetail.product?.name}
               </p>
               <p>
-                <strong>Price:</strong> ${orderDetail.product?.price}
+                <strong>Price:</strong>{" "}
+                {order.type === "RENT" ? `$${orderDetail.product?.rentPrice}` : `$${orderDetail.product?.price}`}
               </p>
               <p>
                 <strong>Quantity:</strong> {orderDetail.qty}
               </p>
+              {order.type === "RENT" && (
+                <p>
+                  <strong>Days:</strong> {differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart))}
+                </p>
+              )}
               <p>
-                <strong>Total Price:</strong> ${orderDetail.price}
+                <strong>Total:</strong> $
+                {order.type === "RENT"
+                  ? orderDetail.product?.rentPrice *
+                    orderDetail.qty *
+                    differenceInCalendarDays(new Date(order.rentEnd), new Date(order.rentStart))
+                  : orderDetail.product?.price * orderDetail.qty}
               </p>
               <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                 {orderDetail.product?.images?.map((image, index) => (
@@ -231,15 +243,15 @@ const OrderDetail = () => {
 
           <Dialog open={isRefundModalOpen} onClose={closeRefundModal}>
             <DialogTitle>Refund Order</DialogTitle>
-            <DialogContent >
-            <input
-              type="number"
-              id="refundAmount"
-              value={refundAmount}
-              onChange={(e) => setRefundAmount(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
-              placeholder="Enter refund amount"
-            />
+            <DialogContent>
+              <input
+                type="number"
+                id="refundAmount"
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+                placeholder="Enter refund amount"
+              />
             </DialogContent>
             <DialogActions>
               <Button onClick={closeRefundModal} color="secondary">
