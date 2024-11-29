@@ -43,7 +43,7 @@ const ProductDetail = () => {
       cart.push({ productId: Number(id), quantity }); // Ensure the id is a number
     }
     localStorage.setItem("cart", JSON.stringify(cart));
-    window.location.reload();
+    navigate("/cart");
   };
 
   // Handlers for incrementing and decrementing quantity

@@ -3,12 +3,16 @@ import { useParams } from "react-router-dom";
 import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, TextField, Button, DialogActions } from "@mui/material";
 import { getOrder, updateStatus, cancelOrder, refundOrder } from "../../api/order";
 import { differenceInCalendarDays } from "date-fns";
+import axios from "axios";
 
 const OrderDetail = () => {
   const { id } = useParams();
   const [order, setOrder] = useState({});
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  const [uploadedImages, setUploadedImages] = useState([]); // Track uploaded image URLs
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
   const [refundPercentage, setRefundPercentage] = useState(""); // Giá trị phần trăm
@@ -49,7 +53,7 @@ const OrderDetail = () => {
 
   const handleRefundOrder = async () => {
     try {
-      await refundOrder(id, { refundAmount: parseInt(refundAmount, 10) });
+      await refundOrder(id, { refundAmount: parseInt(refundAmount, 10), refundImageUrls: uploadedImages });
       fetchOrder();
       showSnackbar("Order refunded successfully");
       setIsRefundModalOpen(false); // Close the modal
@@ -57,6 +61,37 @@ const OrderDetail = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleUploadImage = async (file) => {
+    const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dx2o9ki2g/image/upload";
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_uploads");
+
+    try {
+      const response = await axios.post(CLOUDINARY_URL, formData);
+      return response.data.secure_url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return "";
+    }
+  };
+
+  const handleImageChange = (event) => {
+    const files = Array.from(event.target.files);
+    setSelectedFiles(files);
+  };
+
+  const handleImageUpload = async () => {
+    const urls = [];
+    for (const file of selectedFiles) {
+      const url = await handleUploadImage(file);
+      if (url) urls.push(url);
+    }
+    setUploadedImages((prev) => [...prev, ...urls]);
+    setSelectedFiles([]); // Clear selected files after upload
+    showSnackbar("Images uploaded successfully!");
   };
 
   const openRefundModal = () => setIsRefundModalOpen(true);
@@ -105,6 +140,9 @@ const OrderDetail = () => {
   const currentDate = new Date();
 
   const isReturnable = order.type === "RENT" && currentDate >= rentEndDate && order.status === 9;
+
+  const isWithinAllowedRange = order.status < 4 || (order.status > 5 && order.status < 10);
+  const isNotExcluded = order.status !== 2 && order.status !== 8;
 
   return (
     <div
@@ -167,6 +205,21 @@ const OrderDetail = () => {
               <hr />
             </div>
           ))}
+          {order.refundImages?.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "8px" }}>Refund Images</h3>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {order.refundImages.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url.imageUrl}
+                    alt={`Refund ${index + 1}`}
+                    style={{ width: "96px", height: "96px", borderRadius: "4px" }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ flex: 1 }}>
@@ -209,7 +262,7 @@ const OrderDetail = () => {
             </span>
           </p>
 
-          {(order.status < 4 || (order.status > 5 && order.status < 10)) && (
+          {isWithinAllowedRange && isNotExcluded && (
             <button
               onClick={handleUpdateStatus}
               style={{
@@ -248,23 +301,58 @@ const OrderDetail = () => {
               <label htmlFor="refundAmount" style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>
                 Refund Amount (% of Deposit)
               </label>
-              <input
-                type="number"
+              <select
                 id="refundAmount"
                 value={refundAmount}
-                onChange={(e) => {
-                  const value = Math.min(Number(e.target.value), 100); // Giới hạn tối đa là 100
-                  setRefundAmount(value);
-                }}
+                onChange={(e) => setRefundAmount(Number(e.target.value))}
                 style={{
                   width: "100%",
                   padding: "8px",
                   border: "1px solid #ccc",
                   borderRadius: "4px",
                   fontSize: "16px",
+                  backgroundColor: "#fff",
                 }}
-                placeholder="Enter refund amount (e.g., 50 for 50%)"
+              >
+                <option value="" disabled>
+                  Select refund amount
+                </option>
+                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((value) => (
+                  <option key={value} value={value}>
+                    {value}%
+                  </option>
+                ))}
+              </select>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ marginBottom: "12px" }}
               />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleImageUpload}
+                disabled={selectedFiles.length === 0}
+              >
+                Upload Images
+              </Button>
+              {uploadedImages.length > 0 && (
+                <div style={{ marginTop: "16px" }}>
+                  <h3 style={{ fontSize: "18px", fontWeight: "500", marginBottom: "8px" }}>Uploaded Images</h3>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {uploadedImages.map((url, index) => (
+                      <img
+                        key={index}
+                        src={url}
+                        alt={`Uploaded ${index + 1}`}
+                        style={{ width: "96px", height: "96px", borderRadius: "4px" }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </DialogContent>
             <DialogActions>
               <Button onClick={closeRefundModal} color="secondary">

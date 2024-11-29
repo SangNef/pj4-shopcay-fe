@@ -64,7 +64,7 @@ const Category = () => {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    window.location.reload(); // Reload the page to update the cart icon
+    navigate("/cart");
     console.log(`Product ${productId} added to cart with quantity 1`);
   };
 
